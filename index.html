@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบตรวจสอบประวัติการเข้าเรียน</title>
+    <!-- 1. โหลด Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- (ใหม่) โหลด Google Font TH Sarabun New -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* (ใหม่) ตั้งค่าฟอนต์ TH Sarabun และปรับขนาด */
+        body {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1.1rem; /* 17.6px */
+            line-height: 1.7;
+        }
+        /* (ใหม่) ปรับขนาดฟอนต์ Tailwind ให้เข้ากับ Sarabun */
+        .text-sm { font-size: 1.0rem; } /* 16px */
+        .text-xs { font-size: 0.9rem; } /* 14.4px */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600; /* Semibold */
+        }
+        
+        /* (ปรับปรุง) ปฏิทินเล็กลง (ลดจาก 6.5rem) */
+        .calendar-day {
+            min-height: 5rem; /* ความสูงช่องปฏิทิน */
+        }
+
+        /* (ใหม่) สำหรับวันที่คลิกได้ */
+        .clickable-day:hover {
+            background-color: #f9fafb; /* bg-gray-50 */
+            cursor: pointer;
+        }
+        /* (อัปเดต) สำหรับวันที่ถูกเลือก (ใช้สี Violet) */
+        .selected-day {
+            border-color: #7c3aed; /* border-violet-600 */
+            background-color: #f5f3ff; /* bg-violet-50 */
+            border-width: 2px;
+        }
+        
+        /* (ใหม่) สไตล์สำหรับการพิมพ์ (Print) */
+        @media print {
+            body {
+                font-family: 'Sarabun', sans-serif !important;
+                color: #000;
+                background: #fff;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #print-area {
+                display: block !important;
+                margin: 0;
+                padding: 0;
+            }
+            #print-area table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            #print-area th, #print-area td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            #print-area th {
+                background-color: #f2f2f2;
+            }
+            /* สีสำหรับ Print */
+            .print-text-green { color: #16a34a !important; }
+            .print-text-orange { color: #f97316 !important; }
+            .print-text-red { color: #dc2626 !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- (ใหม่) พื้นที่สำหรับ Print ซ่อนไว้ -->
+    <div id="print-area" class="hidden"></div>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl no-print">
+        
+        <!-- (ใหม่) Wrapper สำหรับหน้าหลัก -->
+        <div id="main-view-wrapper">
+
+            <!-- ส่วนหัว (ปรับเงา) --><header class="bg-white p-6 rounded-xl shadow-sm mb-6 text-center">
+                <img 
+                    src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" 
+                    alt="logo สกร.นม" 
+                    class="mx-auto h-24 mb-4" 
+                >
+            <!-- (อัปเดต) H1 ม่วง -->
+            <h1 class="text-2xl md:text-3xl font-bold text-violet-700 mb-2">
+                ระบบตรวจสอบประวัติการเข้าเรียน
+            </h1>
+            <h2 class="text-lg md:text-xl font-medium text-gray-700">
+                ปวช. ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา
+            </h2>
+        </header>
+
+        <!-- Main Grid Layout (ปฏิทิน + แดชบอร์ด) -->
+        <div class="lg:grid lg:grid-cols-3 lg:gap-6">
+
+            <!-- คอลัมน์ซ้าย: ปฏิทิน (ขยาย 2 ส่วน) (ปรับเงา) -->
+            <div id="calendar-section" class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">ปฏิทินสรุปยอดผู้มาเรียน</h2>
+                
+                <!-- ส่วนควบคุมปฏิทิน -->
+                <div id="calendar-header" class="flex justify-between items-center mb-4">
+                    <button id="prev-month-button" class="p-2 rounded-lg hover:bg-gray-200">
+                        <svg class="h-6 w-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <!-- (อัปเดต) H3 ม่วง -->
+                    <h3 id="current-month-year" class="text-xl font-bold text-violet-700"></h3>
+                    <button id="next-month-button" class="p-2 rounded-lg hover:bg-gray-200">
+                        <svg class="h-6 w-6 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+                
+                <!-- ส่วนแสดงวันในสัปดาห์ -->
+                <div id="calendar-weekdays" class="grid grid-cols-7 gap-2 mb-2 text-center font-semibold text-gray-500 text-base">
+                    <div>อา</div>
+                    <div>จ</div>
+                    <div>อ</div>
+                    <div>พ</div>
+                    <div>พฤ</div>
+                    <div>ศ</div>
+                    <div>ส</div>
+                </div>
+
+                <!-- ส่วนแสดงปฏิทิน -->
+                <div id="calendar-grid-loading" class="text-center text-gray-500 p-8 hidden">
+                    กำลังโหลดข้อมูล...
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-2">
+                    <!-- วันที่จะถูกสร้างโดย JavaScript -->
+                </div>
+            </div>
+
+            <!-- (อัปเดต) คอลัมน์ขวา: Wrapper สำหรับ แดชบอร์ด + Live Monitor -->
+            <div class="lg:col-span-1 space-y-6">
+
+                <!-- คอลัมน์ขวา: แดชบอร์ด (1 ส่วน) (ปรับเงา) -->
+                <div id="dashboard-section" class="bg-white p-6 rounded-xl shadow-sm">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">สรุปข้อมูลรายวัน</h2>
+                    <div id="dashboard-content">
+                        
+                        <!-- สถานะเริ่มต้นของแดชบอร์ด -->
+                        <div id="dashboard-placeholder" class="text-center text-gray-500 py-16">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-gray-400 mb-4"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path><path d="m11.1 16.5-1.8-1.8a.9.9 0 0 0-1.3 0l-1.8 1.8"></path><path d="M18 16.5h-1.3l-1.8-1.8a.9.9 0 0 0-1.3 0l-1.8 1.8h-1.3"></path><path d="m7.5 10.5 1.8 1.8a.9.9 0 0 0 1.3 0l1.8-1.8"></path></svg>
+                            <p class="text-base">กรุณาเลือกวันที่จากปฏิทิน</p>
+                        </div>
+                        
+                        <!-- เนื้อหาแดชบอร์ดที่จะแสดงเมื่อเลือกวัน -->
+                        <div id="dashboard-data" class="hidden">
+                            <!-- (อัปเดต) H3 ม่วง -->
+                            <h3 id="dashboard-date" class="text-lg font-bold text-violet-700 mb-4"></h3>
+                            
+                            <!-- (อัปเดต) สรุปยอด พร้อมไอคอน และ "ยอดรวมทั้งหมด" -->
+                            <div id="dashboard-summary" class="mb-4 space-y-3">
+                                <!-- ยอดสรุปจะถูกสร้างโดย JavaScript -->
+                            </div>
+                            
+                            <!-- (ใหม่) ปุ่มสำหรับเปิด/ปิด รายละเอียด -->
+                            <button id="toggle-details-button" class="w-full mt-4 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-100 rounded-lg hover:bg-violet-200 transition duration-150">
+                                แสดงรายชื่อนักศึกษาและตัวเลือก
+                            </button>
+
+                            <!-- (ใหม่) Wrapper สำหรับรายละเอียด (ซ่อนไว้) -->
+                            <div id="dashboard-details" class="hidden mt-4">
+                                <!-- (ย้ายมา) ส่วนปุ่ม Export -->
+                                <div id="dashboard-export" class="border-t pt-4 mt-4 space-y-2">
+                                    <h4 class="text-base font-semibold text-gray-700 mb-2">ตัวเลือกการส่งออก</h4>
+                                    <!-- (อัปเดต) ปุ่มทอง (Amber) -->
+                                    <button id="print-pdf-button" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition duration-150">
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                        <span>Print / Save as PDF</span>
+                                    </button>
+                                    <button id="csv-button" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition duration-150">
+                                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                                        <span>Export as CSV</span>
+                                    </button>
+                                </div>
+                                
+                                <!-- (ย้ายมา) รายชื่อ -->
+                                <h4 class="text-base font-semibold text-gray-700 mb-2 border-t pt-4 mt-4">รายชื่อในวันนี้</h4>
+                                <ul id="dashboard-student-list" class="divide-y divide-gray-200 h-64 overflow-y-auto">
+                                    <!-- รายชื่อนักศึกษาจะถูกสร้างโดย JavaScript -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- (อัปเดต) คอลัมน์ขวา: ปุ่มสำหรับเปิด Live Monitor -->
+                <div id="live-monitor-button-wrapper" class="bg-white p-6 rounded-xl shadow-sm">
+                    <button id="toggle-live-monitor-button" class="w-full flex items-center justify-center gap-3 px-4 py-3 text-lg font-semibold text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                        </span>
+                        Live Monitor (ข้อมูลวันนี้)
+                    </button>
+                </div>
+
+                <!-- (ย้ายมา) คอลัมน์ขวา: ปุ่มสำหรับเปิด/ปิด ส่วนรายงาน -->
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button id="toggle-report-button" class="w-full bg-gray-700 text-white px-4 py-3 font-semibold rounded-lg shadow-sm hover:bg-gray-800 transition duration-200 flex items-center justify-center gap-2 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        <span>สร้างรายงานสรุปรายชื่อนักศึกษา</span>
+                    </button>
+                </div>
+
+            </div> <!-- /end คอลัมน์ขวา Wrapper -->
+
+        </div> <!-- /end Main Grid Layout -->
+
+
+        <!-- (ย้ายไปคอลัมน์ขวาแล้ว) ... -->
+
+        <!-- (ย้าย) ส่วนสร้างรายงาน ... -->
+        
+        <!-- (ย้าย) ส่วนแสดงสถานะ (ของส่วนรายงาน) -->
+
+        <!-- (ย้าย) ส่วนแสดงผลลัพธ์ (ตาราง) (ของส่วนรายงาน) (ปรับเงา) -->
+
+        <!-- (อัปเดต) ส่วนท้าย -->
+        <footer class="text-center text-gray-500 mt-8 text-sm no-print">
+            ระบบนี้เชื่อมต่อกับ ระบบบันทึกเข้าเรียน พัฒนาโดย : ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา
+        </footer>
+
+    </div> <!-- /end main-view-wrapper -->
+
+
+    <!-- (ใหม่) Wrapper สำหรับหน้า "สร้างรายงาน" (ซ่อนไว้โดยเริ่มต้น) -->
+    <div id="report-view-wrapper" class="hidden">
+        
+        <!-- (ใหม่) ปุ่มย้อนกลับ -->
+        <div class="mb-4">
+            <button id="back-to-main-button" class="p-2 rounded-lg hover:bg-gray-200 flex items-center gap-2 text-lg font-semibold text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                <span>ย้อนกลับ</span>
+            </button>
+        </div>
+
+        <!-- (ย้ายมา) ส่วนสร้างรายงาน (ปรับเงา) -->
+        <!-- (อัปเดต) ลบ 'hidden' ออกจากที่นี่ -->
+        <div id="report-section" class="bg-white p-6 rounded-xl shadow-sm mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">รายละเอียดรายงาน</h2>
+            
+            <!-- (อัปเดต) ปรับ Layout เป็น 2x2 และเพิ่มปุ่มล้าง -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                
+                <!-- Filters -->
+                <div>
+                    <label for="report-start-date" class="block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
+                    <input type="date" id="report-start-date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                </div>
+                <div>
+                    <label for="report-end-date" class="block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
+                    <input type="date" id="report-end-date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
+                </div>
+
+                <!-- *** (FIX) เติมส่วนที่ขาดหายไป *** -->
+
+                <!-- (อัปเดต) Button ม่วง -->
+                <button id="generate-report-button" class="w-full bg-violet-600 text-white px-4 py-2 font-semibold rounded-lg shadow-sm hover:bg-violet-700 transition duration-200 flex items-center justify-center gap-2">
+                    <svg id="report-search-icon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <svg id="report-loading-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>สร้างรายงาน</span>
+                </button>
+
+                <!-- (ใหม่) ปุ่มล้างการค้นหา -->
+                <button id="clear-report-button" class="w-full bg-gray-200 text-gray-700 px-4 py-2 font-semibold rounded-lg shadow-sm hover:bg-gray-300 transition duration-200 flex items-center justify-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    <span>ล้างการค้นหา</span>
+                </button>
+
+            </div> <!-- /end grid -->
+        </div> <!-- /end report-section -->
+        
+        <!-- *** (END FIX) *** -->
+
+
+        <!-- (ใหม่) ปุ่มกรองระดับชั้น (ซ่อนไว้โดยเริ่มต้น) -->
+        <div id="report-level-filters" class="bg-white p-4 rounded-xl shadow-sm mb-6 hidden">
+            <h3 class="text-base font-semibold text-gray-700 mb-3">ตัวกรองระดับชั้น</h3>
+            <div class="flex flex-wrap gap-2">
+                <!--
+                    (ใหม่) ปุ่มฟิลเตอร์
+                    - .level-filter-button เป็น class สำหรับจับ event
+                    - data-filter="all" / "ปวช.1" / "ปวช.2" / "ปวช.3" ใช้สำหรับ JavaScript
+                -->
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-violet-600 text-white" data-filter="all">
+                    ดูทั้งหมด
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.1">
+                    ปวช.1
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.2">
+                    ปวช.2
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.3">
+                    ปวช.3
+                </button>
+            </div>
+        </div>
+
+        <!-- (ย้ายมา) ส่วนแสดงสถานะ (ของส่วนรายงาน) -->
+        <div id="report-status-message" class="text-center p-4 mb-6 rounded-lg hidden"></div>
+
+        <!-- (ย้ายมา) ส่วนแสดงผลลัพธ์ (ตาราง) (ของส่วนรายงาน) (ปรับเงา) -->
+        <div id="report-table-wrapper" class="bg-white rounded-xl shadow-sm overflow-hidden hidden">
+            
+            <!-- (อัปเดต) เพิ่มปุ่ม Export ที่นี่ -->
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-lg font-semibold text-gray-700">ผลลัพธ์รายงาน</h3>
+                <div id="report-export-buttons" class="hidden space-x-2">
+                    <!-- (อัปเดต) ปุ่มทอง (Amber) -->
+                    <button id="report-print-pdf-button" class="flex items-center gap-1 px-3 py-1 text-sm font-medium text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                        <span>Print / PDF</span>
+                    </button>
+                    <button id="report-csv-button" class="flex items-center gap-1 px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition duration-150">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        <span>Export CSV</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50" id="report-table-header">
+                        <!-- ส่วนหัวตารางจะถูกสร้างโดย JavaScript --></thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="report-table-body">
+                        <!-- ข้อมูลนักศึกษาจะถูกสร้างโดย JavaScript --></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div> <!-- /end report-view-wrapper -->
+
+
+    </div> <!-- /end container -->
+
+    <!-- (ใหม่) Full-screen Live Monitor Overlay (Hidden by default) -->
+    <div id="live-monitor-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-3">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
+                    </span>
+                    Live Monitor (ข้อมูลวันนี้)
+                </h2>
+                <button id="close-live-monitor-button" class="p-2 text-gray-500 hover:text-gray-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <!-- Status -->
+            <div id="live-monitor-status" class="p-3 text-sm text-gray-600 bg-gray-50">
+                อัปเดตล่าสุด: -
+            </div>
+            
+            <!-- List (Scrollable) -->
+            <ul id="live-monitor-list" class="divide-y divide-gray-200 overflow-y-auto flex-grow p-4">
+                <li id="live-monitor-placeholder" class="text-gray-500 text-center p-8">กำลังรอข้อมูล...</li>
+                <!-- JS will populate this -->
+            </ul>
+        </div>
+    </div>
+
+
+    <script>
+        //
+        // *** 1. สำคัญมาก! ***
+        //
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxBQG0NjyO5p-8r79PSCOuBRqJBmGUX6Gd6PKAVw1Z7zcALP8higXf9uQtwR_SQIYhl/exec'; 
+
+        // --- DOM ELEMENTS (ส่วนรายงาน) ---
+        const toggleReportButton = document.getElementById('toggle-report-button'); // (ใหม่)
+        // (อัปเดต) ย้าย reportSection มาอยู่กับ DOM ใหม่
+        // const reportSection = document.getElementById('report-section'); // (ใหม่) 
+        const reportStartDate = document.getElementById('report-start-date');
+        const reportEndDate = document.getElementById('report-end-date');
+        const generateReportButton = document.getElementById('generate-report-button');
+        const reportSearchIcon = document.getElementById('report-search-icon');
+        const reportLoadingSpinner = document.getElementById('report-loading-spinner');
+        const reportStatusMessage = document.getElementById('report-status-message');
+        const reportTableWrapper = document.getElementById('report-table-wrapper');
+        const reportTableHeader = document.getElementById('report-table-header');
+        const reportTableBody = document.getElementById('report-table-body');
+        const reportExportButtons = document.getElementById('report-export-buttons');
+        const reportPrintPdfButton = document.getElementById('report-print-pdf-button');
+        const reportCsvButton = document.getElementById('report-csv-button');
+        const clearReportButton = document.getElementById('clear-report-button'); // (ใหม่)
+        const reportLevelFilters = document.getElementById('report-level-filters'); // (ใหม่)
+
+        // (ใหม่) DOM Elements สำหรับสลับหน้า
+        const mainViewWrapper = document.getElementById('main-view-wrapper');
+        const reportViewWrapper = document.getElementById('report-view-wrapper');
+        const backToMainButton = document.getElementById('back-to-main-button');
+        const reportSection = document.getElementById('report-section'); // (ย้ายมา)
+
+
+        // --- DOM ELEMENTS (ส่วนปฏิทิน) ---
+        const calendarGrid = document.getElementById('calendar-grid');
+        const calendarLoading = document.getElementById('calendar-grid-loading');
+        const currentMonthYearEl = document.getElementById('current-month-year');
+        const prevMonthButton = document.getElementById('prev-month-button');
+        const nextMonthButton = document.getElementById('next-month-button');
+        
+        // --- DOM ELEMENTS (ส่วนแดชบอร์ด) ---
+        const dashboardPlaceholder = document.getElementById('dashboard-placeholder');
+        const dashboardData = document.getElementById('dashboard-data');
+        const dashboardDate = document.getElementById('dashboard-date');
+        const dashboardSummary = document.getElementById('dashboard-summary');
+        const dashboardStudentList = document.getElementById('dashboard-student-list');
+        const printPdfButton = document.getElementById('print-pdf-button');
+        const csvButton = document.getElementById('csv-button');
+        // (ใหม่)
+        const toggleDetailsButton = document.getElementById('toggle-details-button');
+        const dashboardDetails = document.getElementById('dashboard-details');
+        const printArea = document.getElementById('print-area');
+        
+        // --- (อัปเดต) DOM ELEMENTS (LIVE MONITOR) ---
+        const toggleLiveMonitorButton = document.getElementById('toggle-live-monitor-button');
+        const liveMonitorOverlay = document.getElementById('live-monitor-overlay');
+        const closeLiveMonitorButton = document.getElementById('close-live-monitor-button');
+        const liveMonitorList = document.getElementById('live-monitor-list');
+        const liveMonitorPlaceholder = document.getElementById('live-monitor-placeholder');
+        const liveMonitorStatus = document.getElementById('live-monitor-status');
+
+
+        // --- ตัวแปร Global ---
+        let currentCalendarDate = new Date();
+        let monthlyRecords = []; // เก็บข้อมูลทั้งเดือนไว้ในนี้
+        let selectedDateKey = null; // เก็บวันที่ที่ถูกเลือก (YYYY-MM-DD)
+        let selectedDayRecords = []; // เก็บข้อมูลของวันที่เลือก
+        let reportDataCache = []; // (ใหม่) เก็บข้อมูลรายงานที่ดึงมา
+        let currentLevelFilter = 'all'; // (ใหม่) เก็บตัวกรองระดับชั้น
+        let liveDataCache = ""; // (ใหม่) Cache สำหรับ Live Monitor
+        let liveMonitorInterval = null; // (ใหม่) ID สำหรับ setInterval
+        let studentProfileCache = {}; // (ใหม่) Cache for student profiles
+
+        // --- (ใหม่) Helper: Get today's date as YYYY-MM-DD ---
+        function getTodayDateKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        
+        // *** (FIX) ***
+        // --- (เพิ่มฟังก์ชันที่ขาดหายไป) FUNCTIONS (ส่วนปฏิทิน & แดชบอร์ด) ---
+
+        /**
+         * (อัปเดต) อัปเดตแดชบอร์ดตามวันที่เลือก (เพิ่ม Total)
+         */
+        function updateDashboard(dateKey) {
+            if (selectedDateKey === dateKey) return; 
+            
+            selectedDateKey = dateKey;
+            
+            // (ใหม่) ซ่อนรายละเอียดเมื่อคลิกวันใหม่
+            dashboardDetails.classList.add('hidden');
+            toggleDetailsButton.textContent = 'แสดงรายชื่อนักศึกษาและตัวเลือก';
+
+            // 1. อัปเดต UI การเลือกในปฏิทิน
+            document.querySelectorAll('.clickable-day').forEach(day => {
+                day.classList.remove('selected-day');
+                if (day.dataset.datekey === dateKey) {
+                    day.classList.add('selected-day');
+                }
+            });
+
+            // 2. กรองข้อมูลเฉพาะวันที่เลือก
+            selectedDayRecords = monthlyRecords.filter(r => r.timestamp && r.timestamp.startsWith(dateKey));
+            
+            // 3. อัปเดตหัวข้อวันที่ในแดชบอร์ด
+            const selectedDate = new Date(`${dateKey}T12:00:00`); // ใช้วันที่แบบ T12:00:00 เพื่อเลี่ยงปัญหา Timezone
+            dashboardDate.textContent = selectedDate.toLocaleString('th-TH', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            // 4. สร้างข้อมูลสรุป (พร้อมไอคอน)
+            let presentCount = 0;
+            let lateCount = 0;
+            let absentCount = 0;
+            
+            selectedDayRecords.forEach(record => {
+                if (record.status.includes('มาเรียน')) presentCount++;
+                else if (record.status.includes('สาย')) lateCount++;
+                else if (record.status.includes('ลา')) absentCount++;
+            });
+
+            // *** (ปรับปรุง) เพิ่ม totalCount ***
+            const totalCount = presentCount + lateCount + absentCount;
+
+            dashboardSummary.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-2 text-green-600 font-semibold">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        มาเรียน
+                    </span>
+                    <span class="text-green-600 font-bold text-lg">${presentCount}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-2 text-orange-500 font-semibold">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        มาสาย
+                    </span>
+                    <span class="text-orange-500 font-bold text-lg">${lateCount}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="flex items-center gap-2 text-red-600 font-semibold">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        ลา/ขาด
+                    </span>
+                    <span class="text-red-600 font-bold text-lg">${absentCount}</span>
+                </div>
+                
+                <!-- *** (อัปเดต) ยอดรวมสีม่วง *** -->
+                <div class="flex justify-between items-center border-t border-gray-200 pt-2 mt-2">
+                    <span class="flex items-center gap-2 text-violet-700 font-bold">
+                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-4 0 4 4 0 014 0z" />
+                        </svg>
+                        ยอดรวมทั้งหมด
+                    </span>
+                    <span class="text-violet-700 font-bold text-lg">${totalCount}</span>
+                </div>
+            `;
+
+            // 5. สร้างรายชื่อนักศึกษา
+            dashboardStudentList.innerHTML = ''; // เคลียร์ของเก่า
+            if (selectedDayRecords.length === 0) {
+                dashboardStudentList.innerHTML = '<li class="text-gray-500 text-center p-4">ไม่พบข้อมูลการเข้าเรียน</li>';
+            } else {
+                selectedDayRecords.forEach(record => {
+                    const li = document.createElement('li');
+                    li.className = 'py-3 flex justify-between items-center';
+                    li.innerHTML = `
+                        <div class="flex-grow">
+                            <p class="text-sm font-medium text-gray-900">${record.name}</p>
+                            <p class="text-xs text-gray-500">${record.reason || ''}</p>
+                        </div>
+                        <div class="text-sm text-right ml-4">
+                            ${formatAttendance(record.status)}
+                        </div>
+                    `;
+                    dashboardStudentList.appendChild(li);
+                });
+            }
+
+            // 6. แสดงแดชบอร์ด
+            dashboardPlaceholder.classList.add('hidden');
+            dashboardData.classList.remove('hidden');
+        }
+
+        /**
+         * (ใหม่) จัดการการคลิกบนปฏิทิน
+         */
+        function handleDayClick(event) {
+            const dayElement = event.target.closest('.clickable-day');
+            if (dayElement && dayElement.dataset.datekey) {
+                updateDashboard(dayElement.dataset.datekey);
+            }
+        }
+
+        /**
+         * (อัปเดต) ประมวลผลข้อมูลรายเดือนเพื่อแสดงยอดบนปฏิทิน (ปรับขนาด font)
+         */
+        function renderDailyCounts(records) {
+             const dailyCounts = {};
+             records.forEach(record => {
+                if (record.status && record.status.includes('มาเรียน')) {
+                    const recordDate = new Date(record.timestamp);
+                    const dateKey = recordDate.toISOString().split('T')[0]; // YYYY-MM-DD
+                    dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+                }
+             });
+
+            // อัปเดตตัวเลขลงในช่องปฏิทิน
+            Object.keys(dailyCounts).forEach(dateKey => {
+                const countEl = document.getElementById(`count-${dateKey}`);
+                if (countEl) {
+                    // *** (ปรับปรุง) ลดขนาด font จาก text-xl เป็น text-lg ***
+                    countEl.innerHTML = `
+                        <span class="text-green-600 font-bold text-lg">${dailyCounts[dateKey]}</span>
+                        <span class="text-green-500 text-xs"> คน</span>
+                    `;
+                }
+            });
+        }
+
+        /**
+         * (อัปเดต) ดึงข้อมูลสรุปของเดือนและวาดลงปฏิทิน
+         */
+        async function fetchAndDisplayMonthlyData(year, month) {
+            calendarGrid.classList.add('hidden');
+            calendarLoading.classList.remove('hidden');
+            
+            showDashboardPlaceholder(); // รีเซ็ตแดชบอร์ด
+            monthlyRecords = []; // เคลียร์ข้อมูลเก่า
+
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0); 
+
+            try {
+                const response = await callAppsScript('getAttendanceData', {
+                    startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD
+                    endDate: endDate.toISOString().split('T')[0],   // YYYY-MM-DD
+                    studentIdFilter: null, 
+                    levelFilter: null
+                });
+
+                if (!response.success) {
+                    throw new Error(response.error || 'ไม่สามารถดึงข้อมูลปฏิทินได้');
+                }
+
+                monthlyRecords = response.data.records || [];
+                renderDailyCounts(monthlyRecords);
+
+            } catch (err) {
+                console.error("Calendar Fetch Error:", err);
+            } finally {
+                calendarGrid.classList.remove('hidden');
+                calendarLoading.classList.add('hidden');
+            }
+        }
+
+
+        /**
+         * (อัปเดต) สร้างปฏิทินสำหรับเดือนที่กำหนด (ปรับ margin-top)
+         */
+        function renderCalendar(year, month) {
+            calendarGrid.innerHTML = ''; // เคลียร์ของเก่า
+
+            const firstDayOfMonth = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayWeekday = firstDayOfMonth.getDay(); 
+
+            currentMonthYearEl.textContent = firstDayOfMonth.toLocaleString('th-TH', {
+                month: 'long',
+                year: 'numeric'
+            });
+
+            // 1. สร้างช่องว่าง
+            for (let i = 0; i < firstDayWeekday; i++) {
+                calendarGrid.innerHTML += `<div class="bg-gray-50 rounded-lg"></div>`;
+            }
+
+            // 2. สร้างช่องวันที่
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                // *** (ปรับปรุง) ลด mt-3 เป็น mt-1 ***
+                calendarGrid.innerHTML += `
+                    <div class="calendar-day p-2 border rounded-lg bg-white overflow-hidden text-left align-top clickable-day" 
+                         data-datekey="${dateKey}">
+                        
+                        <span class="font-medium text-gray-800">${day}</span>
+                        
+                        <div id="count-${dateKey}" class="text-center mt-1">
+                            <!-- ยอดจะถูกเติมทีหลัง -->
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        /**
+         * (ใหม่) ฟังก์ชันอัปเดตปฏิทินทั้งหมด
+         */
+        function updateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            renderCalendar(year, month); // วาดโครง
+            fetchAndDisplayMonthlyData(year, month); // เติมข้อมูล
+        }
+
+        // *** (END FIX) ***
+
+
+        /**
+         * (ใหม่) แสดงหน้าเริ่มต้นของแดชบอร์ด
+         */
+        function showDashboardPlaceholder() {
+            dashboardPlaceholder.classList.remove('hidden');
+            dashboardData.classList.add('hidden');
+            dashboardDetails.classList.add('hidden'); // (ใหม่)
+            selectedDateKey = null;
+            selectedDayRecords = [];
+            // ลบการเลือกทั้งหมดในปฏิทิน
+            document.querySelectorAll('.clickable-day').forEach(day => {
+                day.classList.remove('selected-day');
+            });
+        }
+
+        /**
+         * (ใหม่) กรองข้อมูลรายงานตามระดับชั้น
+         */
+        function filterReportData(data, filter) {
+            if (filter === 'all') {
+                return data;
+            }
+            // กรองโดยเช็คว่า 'levelDetail' (เช่น "ปวช.1/1") มี "ปวช.1" (filter)
+            return data.filter(student => 
+                student.levelDetail && student.levelDetail.includes(filter)
+            );
+        }
+
+        /**
+         * (ใหม่) อัปเดตสไตล์ปุ่มฟิลเตอร์
+         */
+        function updateFilterButtonStyles() {
+            const buttons = document.querySelectorAll('#report-level-filters .level-filter-button');
+            buttons.forEach(btn => {
+                if (btn.dataset.filter === currentLevelFilter) {
+                    btn.classList.add('bg-violet-600', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                } else {
+                    btn.classList.remove('bg-violet-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                }
+            });
+        }
+
+
+        // --- (ใหม่) FUNCTIONS (LIVE MONITOR) ---
+
+        /**
+         * (อัปเดต) ดึงข้อมูล Live Monitor และข้อมูลโปรไฟล์นักศึกษา
+         */
+        async function fetchLiveMonitorData() {
+            const todayKey = getTodayDateKey();
+            
+            try {
+                // 1. Get attendance records for today
+                const response = await callAppsScript('getAttendanceData', {
+                    startDate: todayKey,
+                    endDate: todayKey,
+                    studentIdFilter: null, 
+                    levelFilter: null
+                });
+
+                if (!response.success) {
+                    throw new Error(response.error || 'ไม่สามารถดึงข้อมูล Live ได้');
+                }
+
+                const records = response.data.records || [];
+                
+                // 2. Check if data has changed
+                const newDataString = JSON.stringify(records);
+                // (อัปเดต) ตรวจสอบ cache ของโปรไฟล์ด้วย
+                if (newDataString === liveDataCache && Object.keys(studentProfileCache).length > 0) { 
+                        liveMonitorStatus.textContent = `อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')} (ไม่เปลี่ยนแปลง)`;
+                    return; // Data hasn't changed, and we have cache, so skip
+                }
+                
+                liveDataCache = newDataString; // Update attendance cache
+
+                // 3. (ใหม่) Find missing student profiles
+                const missingProfileIds = [];
+                records.forEach(record => {
+                    if (record.studentId && !studentProfileCache[record.studentId]) {
+                        missingProfileIds.push(record.studentId);
+                    }
+                });
+
+                // 4. (ใหม่) Fetch missing profiles in parallel
+                if (missingProfileIds.length > 0) {
+                    // Remove duplicates
+                    const uniqueMissingIds = [...new Set(missingProfileIds)];
+                    
+                    liveMonitorStatus.textContent = `กำลังดึงข้อมูลโปรไฟล์ ${uniqueMissingIds.length} คน...`;
+                    
+                    const profilePromises = uniqueMissingIds.map(id => 
+                        callAppsScript('getStudentData', { studentId: id })
+                    );
+                    
+                    const results = await Promise.allSettled(profilePromises);
+                    
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value.success) {
+                            const profile = result.value.data;
+                            if (profile && profile.id) {
+                                // Add to cache
+                                studentProfileCache[profile.id] = profile; 
+                            }
+                        }
+                    });
+                }
+                
+                // 5. Render the list
+                liveMonitorList.innerHTML = ''; // Clear list
+                
+                if (records.length === 0) {
+                    liveMonitorList.innerHTML = '<li id="live-monitor-placeholder" class="text-gray-500 text-center p-8">ยังไม่มีข้อมูลสำหรับวันนี้</li>';
+                } else {
+                    // Render list from new to old
+                    records.reverse().forEach((record, index) => { // (อัปเดต) เพิ่ม index
+                        const li = document.createElement('li');
+                        // (อัปเดต) เปลี่ยน layout
+                        li.className = 'py-3 px-3 flex items-start text-base gap-3'; 
+                        
+                        const recordTime = new Date(record.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        
+                        // (อัปเดต) Get profile from cache
+                        const profile = studentProfileCache[record.studentId];
+                        // (อัปเดต) Use levelDetail from profile, fallback to record.level
+                        const levelDisplay = (profile && profile.levelDetail) ? profile.levelDetail : (record.level || 'ไม่ระบุระดับชั้น');
+
+                        li.innerHTML = `
+                            <!-- (อัปเดต) ลำดับที่สีม่วง -->
+                            <div class="flex-shrink-0 w-8 pt-1">
+                                <span class="text-sm font-bold text-violet-600">${index + 1}.</span>
+                            </div>
+                            
+                            <!-- ข้อมูลหลัก -->
+                            <div class="flex-grow">
+                                <p class="font-medium text-gray-800">${record.name}</p>
+                                <!-- (อัปเดต) ใช้ levelDetail -->
+                                <p class="text-sm text-gray-600">${levelDisplay}</p> 
+                                <p class="text-xs text-gray-500">เวลา ${recordTime} น.</p>
+                            </div>
+                            
+                            <!-- สถานะ -->
+                            <div class="text-right flex-shrink-0 pt-1">
+                                ${formatAttendance(record.status)}
+                            </div>
+                        `;
+                        liveMonitorList.appendChild(li);
+                    });
+                }
+                
+                liveMonitorStatus.textContent = `อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')}`;
+
+            } catch (err) {
+                console.error("Live Monitor Error:", err);
+                liveMonitorStatus.textContent = `อัปเดตล่าสุด: ${new Date().toLocaleTimeString('th-TH')} (Error)`;
+                liveMonitorList.innerHTML = `<li class="text-red-500 text-center p-8">เกิดข้อผิดพลาด: ${err.message}</li>`;
+            }
+        }
+
+        /**
+         * (ใหม่) ล้างข้อมูลการค้นหารายงาน
+         */
+        function clearReport() {
+            reportStartDate.value = '';
+            reportEndDate.value = '';
+            reportTableWrapper.classList.add('hidden');
+            reportExportButtons.classList.add('hidden');
+            reportLevelFilters.classList.add('hidden'); // (ใหม่)
+            reportDataCache = [];
+            currentLevelFilter = 'all'; // (ใหม่)
+            showReportStatus('กรุณากำหนดเงื่อนไขและสร้างรายงาน', 'info');
+            console.log("Report cleared.");
+        }
+
+
+        // --- FUNCTIONS (ส่วนกลาง & ส่วนรายงาน) ---
+
+        /**
+         * (ใหม่) แสดงข้อความสถานะ (สำหรับส่วนรายงาน)
+         */
+        function showReportStatus(message, type = 'info') {
+            reportStatusMessage.textContent = message;
+            reportStatusMessage.classList.remove('hidden', 'bg-blue-100', 'text-blue-700', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+            
+            if (type === 'info') {
+                reportStatusMessage.classList.add('bg-blue-100', 'text-blue-700');
+            } else if (type === 'error') {
+                reportStatusMessage.classList.add('bg-red-100', 'text-red-700');
+            } else if (type === 'success') {
+                reportStatusMessage.classList.add('bg-green-100', 'text-green-700');
+            }
+            
+            reportStatusMessage.classList.remove('hidden');
+        }
+        function hideReportStatus() {
+            reportStatusMessage.classList.add('hidden');
+        }
+
+        /**
+         * (ใหม่) สลับสถานะปุ่มสร้างรายงาน (loading)
+         */
+        function setReportButtonLoading(isLoading) {
+            if (isLoading) {
+                generateReportButton.disabled = true;
+                reportSearchIcon.classList.add('hidden');
+                reportLoadingSpinner.classList.remove('hidden');
+            } else {
+                generateReportButton.disabled = false;
+                reportSearchIcon.classList.remove('hidden');
+                reportLoadingSpinner.classList.add('hidden');
+            }
+        }
+
+        /**
+         * (อัปเดต) แปลงสัญลักษณ์การเข้าเรียนเป็น HTML (ปรับขนาด)
+         */
+        function formatAttendance(status) {
+            if (!status) {
+                return '<span class="text-gray-400">-</span>';
+            }
+            // ใช้ text-base เพื่อให้ขนาดสอดคล้องกับฟอนต์
+            if (status.includes('มาเรียน')) {
+                return '<span class="text-green-600 font-semibold text-base">มาเรียน</span>';
+            } else if (status.includes('สาย')) {
+                return '<span class="text-orange-500 font-semibold text-base">มาสาย</span>';
+            } else if (status.includes('ลา')) {
+                return '<span class="text-red-600 font-semibold text-base">ลา/ขาด</span>';
+            }
+            return `<span class="text-gray-700 text-base">${status}</span>`;
+        }
+        
+        /**
+         * (อัปเดต) แปลง ISO timestamp (ปรับขนาด)
+         */
+        function formatTimestamp(isoString) {
+            if (!isoString) return "-";
+            const date = new Date(isoString);
+            return date.toLocaleString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        /**
+         * (อัปเดต) วาดส่วนหัวของตาราง (สำหรับรายงาน)
+         */
+        function renderReportTableHeader() {
+            reportTableHeader.innerHTML = ''; // เคลียร์ของเก่า
+            const tr = document.createElement('tr');
+            // (อัปเดต) เพิ่มคอลัมน์ "ลำดับ"
+            const headers = ['ลำดับ', 'รหัสนักศึกษา', 'ชื่อ-นามสกุล', 'รายละเอียดระดับชั้น'];
+            
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.scope = 'col';
+                th.className = 'px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                th.textContent = header;
+                tr.appendChild(th);
+            });
+            reportTableHeader.appendChild(tr);
+        }
+
+        /**
+         * (อัปเดต) วาดข้อมูลลงในตาราง (สำหรับรายงาน)
+         * (ใช้ global reportDataCache และ currentLevelFilter)
+         */
+        function renderReportTable() {
+            reportTableBody.innerHTML = ''; // เคลียร์ของเก่า
+            
+            // (ใหม่) กรองข้อมูลก่อนวาด
+            const filteredData = filterReportData(reportDataCache, currentLevelFilter);
+
+            if (filteredData.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.colSpan = 4; // (อัปเดต) ปรับ colSpan เป็น 4
+                td.className = 'px-6 py-4 text-center text-gray-500';
+                td.textContent = 'ไม่พบข้อมูลตามเงื่อนไข (หรือตัวกรองระดับชั้น) ที่กำหนด';
+                tr.appendChild(td);
+                reportTableBody.appendChild(tr);
+                return;
+            }
+
+            // (อัปเดต) เพิ่ม index (ลำดับ)
+            // (อัปเดต) ใช้ filteredData
+            filteredData.forEach((student, index) => { 
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-gray-50';
+                
+                tr.innerHTML = `
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500 text-center">${index + 1}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${student.id}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${student.name}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${student.levelDetail || '-'}</td>
+                `;
+                
+                reportTableBody.appendChild(tr);
+            });
+        }
+
+        /**
+         * ฟังก์ชันสำหรับเรียก API ของ Google Apps Script
+         */
+        async function callAppsScript(action, payload) {
+            if (WEB_APP_URL.includes('YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_GOES_HERE')) {
+                 throw new Error('ยังไม่ได้ตั้งค่า WEB_APP_URL!');
+            }
+            
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                cache: 'no-cache',
+                body: JSON.stringify({ action: action, ...payload })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+
+        /**
+         * (อัปเดต) ทำการสร้างรายงาน (แสดงรายชื่อนักศึกษา)
+         * (FIX) เปลี่ยนจากการดึงโปรไฟล์ทีละคน (Serial) เป็นดึงพร้อมกัน (Parallel)
+         */
+        async function performReportGeneration() {
+            // 1. ดึงค่าฟิลเตอร์
+            const startDate = reportStartDate.value;
+            const endDate = reportEndDate.value;
+            
+            // 2. ตรวจสอบวันที่
+            if (!startDate || !endDate) {
+                showReportStatus('กรุณาเลือกวันที่เริ่มต้นและวันที่สิ้นสุด', 'error');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                showReportStatus('วันที่เริ่มต้นต้องมาก่อนวันที่สิ้นสุด', 'error');
+                return;
+            }
+
+            setReportButtonLoading(true);
+            hideReportStatus();
+            reportTableWrapper.classList.add('hidden');
+            reportDataCache = []; 
+            reportExportButtons.classList.add('hidden');
+
+            try {
+                // 3. เรียก API ดึงข้อมูลการเข้าเรียน (getAttendanceData)
+                const response = await callAppsScript('getAttendanceData', {
+                    startDate: startDate,
+                    endDate: endDate,
+                    studentIdFilter: null, 
+                    levelFilter: null
+                });
+                
+                if (!response.success) {
+                    throw new Error(response.error || 'ไม่สามารถดึงข้อมูลรายงานได้');
+                }
+
+                let allRecords = response.data.records || [];
+
+                // 4. ประมวลผลเป็น *รายชื่อนักศึกษาที่ไม่ซ้ำกัน*
+                const uniqueStudentIds = {};
+                allRecords.forEach(record => {
+                    if (record.studentId) {
+                        uniqueStudentIds[record.studentId] = true; 
+                    }
+                });
+                const studentIdList = Object.keys(uniqueStudentIds);
+
+                let studentProfiles = [];
+                
+                // 5. (FIX) ถ้าพบนักศึกษา ให้ดึงข้อมูลโปรไฟล์ (getStudentData) แบบ Parallel
+                if (studentIdList.length > 0) {
+                    showReportStatus(`พบนักศึกษา ${studentIdList.length} คน, กำลังดึงข้อมูลโปรไฟล์...`, 'info');
+                    
+                    // สร้าง Array ของ Promises
+                    const profilePromises = studentIdList.map(id => {
+                        // แต่ละ promise จะ call API
+                        return callAppsScript('getStudentData', { studentId: id });
+                    });
+
+                    // รอให้ทุก Promises ทำงานเสร็จ (Promise.allSettled จะไม่ล่ม แม้บางอันจะ error)
+                    const results = await Promise.allSettled(profilePromises);
+                    
+                    // กรองเฉพาะอันที่สำเร็จ (status === 'fulfilled') และมีข้อมูล
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value.success) {
+                            studentProfiles.push(result.value.data);
+                        } else if (result.status === 'rejected') {
+                            console.warn(`Failed to fetch profile (rejected): ${result.reason}`);
+                        } else if (result.status === 'fulfilled' && !result.value.success) {
+                            console.warn(`Failed to fetch profile (API Error): ${result.value.error}`);
+                        }
+                    });
+
+                } else {
+                     showReportStatus(`ไม่พบข้อมูลนักศึกษาที่เข้าเรียนในช่วงวันที่กำหนด`, 'info');
+                     setReportButtonLoading(false);
+                     return;
+                }
+
+                // 6. เรียงลำดับข้อมูล
+                studentProfiles.sort((a, b) => {
+                    const levelA = a.levelDetail || '';
+                    const levelB = b.levelDetail || '';
+                    return levelA.localeCompare(levelB, 'th-TH'); // เรียงตามระดับชั้น (ก,ข,ค)
+                });
+                
+                // 7. เก็บ Cache และวาดตาราง
+                reportDataCache = studentProfiles; // เก็บข้อมูลสำหรับ Export
+                currentLevelFilter = 'all'; // (ใหม่) รีเซ็ตฟิลเตอร์
+                
+                renderReportTable(); // (อัปเดต) ไม่ต้องส่งพารามิเตอร์
+                
+                reportTableWrapper.classList.remove('hidden');
+                
+                if (studentProfiles.length > 0) {
+                    showReportStatus(`แสดงผลลัพธ์ ${studentProfiles.length} คน (เรียงตามระดับชั้น)`, 'success');
+                    reportExportButtons.classList.remove('hidden'); // แสดงปุ่ม Export
+                    reportLevelFilters.classList.remove('hidden'); // (ใหม่) แสดงปุ่มฟิลเตอร์
+                    updateFilterButtonStyles(); // (ใหม่) อัปเดตสไตล์ (ให้ 'all' active)
+                } else {
+                     showReportStatus(`ไม่พบข้อมูลนักศึกษาที่ตรงตามเงื่อนไข`, 'info');
+                     reportExportButtons.classList.add('hidden'); // ซ่อนปุ่ม
+                     reportLevelFilters.classList.add('hidden'); // (ใหม่) ซ่อนปุ่มฟิลเตอร์
+                }
+
+            } catch (err) {
+                console.error("Report Generation Error:", err);
+                showReportStatus(`เกิดข้อผิดพลาด: ${err.message}`, 'error');
+                reportDataCache = [];
+                reportExportButtons.classList.add('hidden');
+                reportLevelFilters.classList.add('hidden'); // (ใหม่) ซ่อนปุ่มฟิลเตอร์
+            } finally {
+                setReportButtonLoading(false);
+            }
+        }
+        
+        // --- (ใหม่) FUNCTIONS (Export) ---
+
+        /**
+         * (อัปเดต) ส่งออกข้อมูลแดชบอร์ดเป็น CSV
+         */
+        function exportDashboardToCSV() {
+            if (!selectedDateKey || selectedDayRecords.length === 0) {
+                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
+                console.warn("ไม่มีข้อมูลให้ export");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Timestamp,Student ID,Name,Level,Status,Reason\r\n";
+            selectedDayRecords.forEach(row => {
+                const timestamp = formatTimestamp(row.timestamp).replace(/"/g, '""');
+                const studentId = row.studentId || "";
+                const name = row.name ? row.name.replace(/"/g, '""') : "";
+                const level = row.level || "";
+                const status = row.status || "";
+                const reason = row.reason ? row.reason.replace(/"/g, '""') : "";
+                csvContent += `"${timestamp}","${studentId}","${name}","${level}","${status}","${reason}"\r\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `attendance_summary_${selectedDateKey}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * (อัปเดต) พิมพ์ข้อมูลแดชบอร์ด (ปรับปรุงสไตล์)
+         */
+        function printDashboard() {
+            if (!selectedDateKey || selectedDayRecords.length === 0) {
+                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
+                console.warn("ไม่มีข้อมูลให้พิมพ์");
+                return;
+            }
+
+            // (อัปเดต) ลบ SVG ออกจาก HTML สรุป
+            const summaryPrintHtml = dashboardSummary.innerHTML.replace(/<svg.*?<\/svg>/g, '');
+
+            let printHtml = `
+                <style>
+                    /* (ใหม่) บังคับโหลดฟอนต์ */
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+                    
+                    body { 
+                        font-family: 'Sarabun', sans-serif; 
+                        margin: 20px; 
+                        font-size: 11pt; /* ขนาดฟอนต์สำหรับพิมพ์ */
+                        line-height: 1.5;
+                    }
+                    h1 { 
+                        font-size: 18pt; 
+                        font-weight: 600; 
+                        color: #333;
+                        margin-bottom: 5px;
+                    }
+                    h2 { 
+                        font-size: 14pt; 
+                        font-weight: 600; 
+                        color: #555;
+                        margin-top: 0;
+                        margin-bottom: 15px;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; /* ใช้ collapse เพื่อความแน่นอนในการพิมพ์ */
+                        margin-top: 15px; 
+                        font-size: 10pt;
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; /* เส้นขอบชัดเจน */
+                        padding: 8px; 
+                        text-align: left; 
+                    }
+                    th { 
+                        background-color: #f4f4f4; 
+                        font-weight: 600;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                    }
+                    tr {
+                        page-break-inside: avoid; /* ป้องกันแถวขาดกลาง */
+                    }
+                    /* สีสถานะ */
+                    .text-green { color: #15803d; font-weight: 600; }
+                    .text-orange { color: #ea580c; font-weight: 600; }
+                    .text-red { color: #b91c1c; font-weight: 600; }
+
+                    /* (ใหม่) จัดสไตล์ส่วนสรุปยอด */
+                    #dashboard-summary-print > div {
+                        display: flex;
+                        justify-content: space-between;
+                        padding: 4px 0;
+                        font-size: 11pt;
+                    }
+                    #dashboard-summary-print .font-bold {
+                        font-weight: 600;
+                    }
+                    #dashboard-summary-print .text-lg {
+                        font-size: 11pt; /* บังคับขนาด */
+                    }
+                    #dashboard-summary-print .border-t {
+                        border-top: 1px solid #ccc;
+                        margin-top: 4px;
+                        padding-top: 8px;
+                    }
+                </style>
+                <h1>สรุปข้อมูลการเข้าเรียน</h1>
+                <h2>วันที่: ${dashboardDate.textContent}</h2>
+                <!-- (อัปเดต) ใช้ ID และ HTML ที่ลบ SVG แล้ว -->
+                <div id="dashboard-summary-print">${summaryPrintHtml}</div> 
+                <h2>รายชื่อ</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>สถานะ</th>
+                            <th>เหตุผล</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            selectedDayRecords.forEach(record => {
+                let statusHtml = record.status || '';
+                if (statusHtml.includes('มาเรียน')) statusHtml = `<span class="text-green">มาเรียน</span>`;
+                else if (statusHtml.includes('สาย')) statusHtml = `<span class="text-orange">มาสาย</span>`;
+                else if (statusHtml.includes('ลา')) statusHtml = `<span class="text-red">ลา/ขาด</span>`;
+                printHtml += `
+                    <tr>
+                        <td>${record.name || ''}</td>
+                        <td>${statusHtml}</td>
+                        <td>${record.reason || ''}</td>
+                    </tr>
+                `;
+            });
+            printHtml += `</tbody></table>`;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHtml);
+            setTimeout(() => {
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        }
+        
+        /**
+         * (ใหม่) ส่งออกข้อมูลรายงาน (Report) เป็น CSV
+         */
+        function exportReportToCSV() {
+            if (reportDataCache.length === 0) {
+                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
+                console.warn("ไม่มีข้อมูลรายงานให้ export");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            // Headers
+            csvContent += "ลำดับ,รหัสนักศึกษา,ชื่อ-นามสกุล,รายละเอียดระดับชั้น\r\n";
+
+            // Rows
+            reportDataCache.forEach((row, index) => {
+                const id = row.id || "";
+                const name = row.name ? row.name.replace(/"/g, '""') : "";
+                const levelDetail = row.levelDetail ? row.levelDetail.replace(/"/g, '""') : "";
+                
+                csvContent += `${index + 1},"${id}","${name}","${levelDetail}"\r\n`;
+            });
+
+            // Create download link
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `student_report_${reportStartDate.value}_to_${reportEndDate.value}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        /**
+         * (อัปเดต) พิมพ์ข้อมูลรายงาน (Report) (ปรับปรุงสไตล์)
+         */
+        function printReport() {
+            // (ใหม่) กรองข้อมูลก่อนพิมพ์
+            const filteredData = filterReportData(reportDataCache, currentLevelFilter);
+
+            if (filteredData.length === 0) {
+                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
+                console.warn("ไม่มีข้อมูลรายงานให้พิมพ์");
+                return;
+            }
+
+            // 1. สร้างเนื้อหา HTML สำหรับพิมพ์
+            let printHtml = `
+                <style>
+                    /* (ใหม่) บังคับโหลดฟอนต์ */
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+                    
+                    body { 
+                        font-family: 'Sarabun', sans-serif; 
+                        margin: 20px; 
+                        font-size: 11pt; /* ขนาดฟอนต์สำหรับพิมพ์ */
+                        line-height: 1.5;
+                    }
+                    h1 { 
+                        font-size: 18pt; 
+                        font-weight: 600; 
+                        color: #333;
+                        margin-bottom: 5px;
+                    }
+                    h2 { 
+                        font-size: 14pt; 
+                        font-weight: 600; 
+                        color: #555;
+                        margin-top: 0;
+                        margin-bottom: 15px;
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; /* ใช้ collapse เพื่อความแน่นอนในการพิมพ์ */
+                        margin-top: 15px; 
+                        font-size: 10pt;
+                    }
+                    th, td { 
+                        border: 1px solid #ddd; /* เส้นขอบชัดเจน */
+                        padding: 8px; 
+                        text-align: left; 
+                    }
+                    th { 
+                        background-color: #f4f4f4; 
+                        font-weight: 600;
+                        padding-top: 10px;
+                        padding-bottom: 10px;
+                    }
+                    tr {
+                        page-break-inside: avoid; /* ป้องกันแถวขาดกลาง */
+                    }
+                </style>
+                <h1>รายงานสรุปรายชื่อนักศึกษา</h1>
+                <h2>ช่วงวันที่: ${reportStartDate.value} ถึง ${reportEndDate.value}</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ลำดับ</th>
+                            <th>รหัสนักศึกษา</th>
+                            <th>ชื่อ-นามสกุล</th>
+                            <th>รายละเอียดระดับชั้น</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            // 2. เพิ่มรายชื่อนักศึกษา
+            // (อัปเดต) ใช้ filteredData
+            filteredData.forEach((student, index) => {
+                printHtml += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${student.id || ''}</td>
+                        <td>${student.name || ''}</td>
+                        <td>${student.levelDetail || ''}</td>
+                    </tr>
+                `;
+            });
+
+            printHtml += `</tbody></table>`;
+
+            // 3. เปิดหน้าต่างใหม่แล้วพิมพ์
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHtml);
+            
+            setTimeout(() => {
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        }
+
+
+        // --- EVENT LISTENERS ---
+        
+        // เริ่มต้นการทำงาน
+        function initialize() {
+            // ส่วนปฏิทิน & แดชบอร์ด
+            updateCalendar();
+            showDashboardPlaceholder(); // เริ่มต้นด้วยหน้าว่าง
+            
+            // (ใหม่) ส่วนรายงาน
+            renderReportTableHeader();
+            hideReportStatus(); // (อัปเดต) ซ่อน status เริ่มต้น
+
+            // (อัปเดต) ไม่ต้องเริ่ม Live Monitor ตอนโหลด
+        }
+
+        initialize();
+
+        // --- (ส่วนปฏิทิน & แดชบอร์ด) ---
+        prevMonthButton.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            updateCalendar();
+        });
+        nextMonthButton.addEventListener('click', () => {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            updateCalendar();
+        });
+        calendarGrid.addEventListener('click', handleDayClick);
+        
+        // (ใหม่) ปุ่ม Export
+        printPdfButton.addEventListener('click', printDashboard);
+        csvButton.addEventListener('click', exportDashboardToCSV);
+
+        // (ใหม่) ปุ่มสลับแสดงรายละเอียด
+        toggleDetailsButton.addEventListener('click', () => {
+            dashboardDetails.classList.toggle('hidden');
+            if (dashboardDetails.classList.contains('hidden')) {
+                toggleDetailsButton.textContent = 'แสดงรายชื่อนักศึกษาและตัวเลือก';
+            } else {
+                toggleDetailsButton.textContent = 'ซ่อนรายชื่อและตัวเลือก';
+            }
+        });
+
+        // --- (อัปเดต) (ส่วนรายงาน - สลับหน้า) ---
+        toggleReportButton.addEventListener('click', () => {
+            // ซ่อนหน้าหลัก
+            mainViewWrapper.classList.add('hidden');
+            
+            // แสดงหน้าสร้างรายงาน
+            reportViewWrapper.classList.remove('hidden');
+            // reportSection.classList.remove('hidden'); // ลบ hidden ออกจาก HTML แทนแล้ว
+
+            // (ใหม่) ถ้าเปิดมาแล้วยังไม่เคยสร้างรายงาน ให้แสดงข้อความ
+            if (reportDataCache.length === 0 && reportTableWrapper.classList.contains('hidden')) {
+                showReportStatus('กรุณากำหนดเงื่อนไขและสร้างรายงาน', 'info');
+            }
+        });
+
+        backToMainButton.addEventListener('click', () => {
+            // แสดงหน้าหลัก
+            mainViewWrapper.classList.remove('hidden');
+            // ซ่อนหน้าสร้างรายงาน
+            reportViewWrapper.classList.add('hidden');
+            // ซ่อน status
+            hideReportStatus();
+        });
+
+        generateReportButton.addEventListener('click', performReportGeneration);
+        clearReportButton.addEventListener('click', clearReport); // (ใหม่)
+        
+        // (ใหม่) Event listener สำหรับปุ่มกรองระดับชั้น
+        reportLevelFilters.addEventListener('click', (event) => {
+            const button = event.target.closest('.level-filter-button');
+            if (!button) return;
+
+            const newFilter = button.dataset.filter;
+            if (newFilter === currentLevelFilter) return; // ไม่ต้องทำอะไรถ้าคลิกฟิลเตอร์เดิม
+
+            currentLevelFilter = newFilter;
+            updateFilterButtonStyles();
+            renderReportTable(); // วาดตารางใหม่ด้วยฟิลเตอร์
+        });
+        
+        // (ใหม่) ปุ่ม Export ของส่วนรายงาน
+        reportPrintPdfButton.addEventListener('click', printReport);
+        reportCsvButton.addEventListener('click', exportReportToCSV); // (แก้ไข Bug)
+
+        // --- (อัปเดต) (Live Monitor Toggle) ---
+        toggleLiveMonitorButton.addEventListener('click', () => {
+            liveMonitorOverlay.classList.remove('hidden');
+            
+            // (ใหม่) โหลดข้อมูลทันที
+            liveMonitorPlaceholder.textContent = 'กำลังโหลดข้อมูล...';
+            
+            // (อัปเดต) เคลียร์ cache โปรไฟล์เมื่อเปิดใหม่
+            studentProfileCache = {}; 
+            
+            fetchLiveMonitorData();
+            
+            // (ใหม่) เริ่ม auto-refresh ทุก 5 วินาที
+            if (liveMonitorInterval) {
+                clearInterval(liveMonitorInterval); // เคลียร์อันเก่า (ถ้ามี)
+            }
+            liveMonitorInterval = setInterval(fetchLiveMonitorData, 5000); // 5 วินาที
+        });
+
+        closeLiveMonitorButton.addEventListener('click', () => {
+            liveMonitorOverlay.classList.add('hidden');
+            
+            // (ใหม่) หยุด auto-refresh
+            if (liveMonitorInterval) {
+                clearInterval(liveMonitorInterval);
+                liveMonitorInterval = null;
+            }
+            
+            // (ใหม่) เคลียร์ข้อมูล/สถานะ (เผื่อเปิดใหม่)
+            liveMonitorList.innerHTML = '<li id="live-monitor-placeholder" class="text-gray-500 text-center p-8">กำลังรอข้อมูล...</li>';
+            liveMonitorStatus.textContent = 'อัปเดตล่าสุด: -';
+            liveDataCache = ""; // รีเซ็ต cache
+            studentProfileCache = {}; // (อัปเดต) เคลียร์ cache โปรไฟล์ด้วย
+        });
+
+    </script>
+</body>
+</html>
