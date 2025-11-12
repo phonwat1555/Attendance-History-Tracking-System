@@ -210,7 +210,7 @@
                 <div class="bg-white p-6 rounded-xl shadow-sm">
                     <button id="toggle-report-button" class="w-full bg-gray-700 text-white px-4 py-3 font-semibold rounded-lg shadow-sm hover:bg-gray-800 transition duration-200 flex items-center justify-center gap-2 text-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                        <span>สร้างรายงานสรุปรายชื่อนักศึกษา</span>
+                        <span>สร้างรายงานสรุป</span>
                     </button>
                 </div>
 
@@ -251,8 +251,8 @@
         <div id="report-section" class="bg-white p-6 rounded-xl shadow-sm mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">รายละเอียดรายงาน</h2>
             
-            <!-- (อัปเดต) ปรับ Layout เป็น 2x2 และเพิ่มปุ่มล้าง -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+            <!-- (อัปเดต) ปรับ Layout เป็น 3 คอลัมน์สำหรับฟิลเตอร์ -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
                 
                 <!-- Filters -->
                 <div>
@@ -263,9 +263,21 @@
                     <label for="report-end-date" class="block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
                     <input type="date" id="report-end-date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
                 </div>
+                
+                <!-- (ใหม่) ตัวกรองสถานะ -->
+                <div>
+                    <label for="report-status-filter" class="block text-sm font-medium text-gray-700">สถานะ</label>
+                    <select id="report-status-filter" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500 bg-white">
+                        <option value="all">ทั้งหมด</option>
+                        <option value="present">มาเรียน</option>
+                        <option value="late">มาสาย</option>
+                        <option value="absent">ลา / ขาดเรียน</option>
+                    </select>
+                </div>
+            </div> <!-- /end filter grid -->
 
-                <!-- *** (FIX) เติมส่วนที่ขาดหายไป *** -->
-
+            <!-- (ใหม่) Grid สำหรับปุ่ม -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                 <!-- (อัปเดต) Button ม่วง -->
                 <button id="generate-report-button" class="w-full bg-violet-600 text-white px-4 py-2 font-semibold rounded-lg shadow-sm hover:bg-violet-700 transition duration-200 flex items-center justify-center gap-2">
                     <svg id="report-search-icon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -281,13 +293,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     <span>ล้างการค้นหา</span>
                 </button>
+            </div> <!-- /end button grid -->
 
-            </div> <!-- /end grid -->
         </div> <!-- /end report-section -->
         
-        <!-- *** (END FIX) *** -->
-
-
+        
         <!-- (ใหม่) ปุ่มกรองระดับชั้น (ซ่อนไว้โดยเริ่มต้น) -->
         <div id="report-level-filters" class="bg-white p-4 rounded-xl shadow-sm mb-6 hidden">
             <h3 class="text-base font-semibold text-gray-700 mb-3">ตัวกรองระดับชั้น</h3>
@@ -392,6 +402,7 @@
         // const reportSection = document.getElementById('report-section'); // (ใหม่) 
         const reportStartDate = document.getElementById('report-start-date');
         const reportEndDate = document.getElementById('report-end-date');
+        const reportStatusFilter = document.getElementById('report-status-filter'); // (ใหม่)
         const generateReportButton = document.getElementById('generate-report-button');
         const reportSearchIcon = document.getElementById('report-search-icon');
         const reportLoadingSpinner = document.getElementById('report-loading-spinner');
@@ -446,7 +457,7 @@
         let monthlyRecords = []; // เก็บข้อมูลทั้งเดือนไว้ในนี้
         let selectedDateKey = null; // เก็บวันที่ที่ถูกเลือก (YYYY-MM-DD)
         let selectedDayRecords = []; // เก็บข้อมูลของวันที่เลือก
-        let reportDataCache = []; // (ใหม่) เก็บข้อมูลรายงานที่ดึงมา
+        let reportDataCache = []; // (ใหม่) เก็บข้อมูลรายงานที่ดึงมา (ตอนนี้จะเก็บ records)
         let currentLevelFilter = 'all'; // (ใหม่) เก็บตัวกรองระดับชั้น
         let liveDataCache = ""; // (ใหม่) Cache สำหรับ Live Monitor
         let liveMonitorInterval = null; // (ใหม่) ID สำหรับ setInterval
@@ -709,15 +720,15 @@
         }
 
         /**
-         * (ใหม่) กรองข้อมูลรายงานตามระดับชั้น
+         * (อัปเดต) กรองข้อมูลรายงานตามระดับชั้น (กรอง records)
          */
         function filterReportData(data, filter) {
             if (filter === 'all') {
                 return data;
             }
-            // กรองโดยเช็คว่า 'levelDetail' (เช่น "ปวช.1/1") มี "ปวช.1" (filter)
-            return data.filter(student => 
-                student.levelDetail && student.levelDetail.includes(filter)
+            // (อัปเดต) กรองโดยเช็คว่า 'level' (เช่น "ปวช.1/1") มี "ปวช.1" (filter)
+            return data.filter(record => 
+                record.level && record.level.includes(filter)
             );
         }
 
@@ -855,11 +866,12 @@
         }
 
         /**
-         * (ใหม่) ล้างข้อมูลการค้นหารายงาน
+         * (อัปเดต) ล้างข้อมูลการค้นหารายงาน
          */
         function clearReport() {
             reportStartDate.value = '';
             reportEndDate.value = '';
+            reportStatusFilter.value = 'all'; // (ใหม่) รีเซ็ตตัวกรองสถานะ
             reportTableWrapper.classList.add('hidden');
             reportExportButtons.classList.add('hidden');
             reportLevelFilters.classList.add('hidden'); // (ใหม่)
@@ -947,8 +959,8 @@
         function renderReportTableHeader() {
             reportTableHeader.innerHTML = ''; // เคลียร์ของเก่า
             const tr = document.createElement('tr');
-            // (อัปเดต) เพิ่มคอลัมน์ "ลำดับ"
-            const headers = ['ลำดับ', 'รหัสนักศึกษา', 'ชื่อ-นามสกุล', 'รายละเอียดระดับชั้น'];
+            // (อัปเดต) เพิ่มคอลัมน์สำหรับรายงานแบบ "รายการ"
+            const headers = ['ลำดับ', 'วันที่/เวลา', 'รหัสนักศึกษา', 'ชื่อ-นามสกุล', 'รายละเอียดระดับชั้น', 'สถานะ', 'เหตุผล'];
             
             headers.forEach(header => {
                 const th = document.createElement('th');
@@ -973,7 +985,7 @@
             if (filteredData.length === 0) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
-                td.colSpan = 4; // (อัปเดต) ปรับ colSpan เป็น 4
+                td.colSpan = 7; // (อัปเดต) ปรับ colSpan เป็น 7
                 td.className = 'px-6 py-4 text-center text-gray-500';
                 td.textContent = 'ไม่พบข้อมูลตามเงื่อนไข (หรือตัวกรองระดับชั้น) ที่กำหนด';
                 tr.appendChild(td);
@@ -981,17 +993,20 @@
                 return;
             }
 
-            // (อัปเดต) เพิ่ม index (ลำดับ)
-            // (อัปเดต) ใช้ filteredData
-            filteredData.forEach((student, index) => { 
+            // (อัปเดต) วาดตารางจาก records
+            filteredData.forEach((record, index) => { 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-gray-50';
                 
+                // (อัปเดต) เปลี่ยนคอลัมน์
                 tr.innerHTML = `
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500 text-center">${index + 1}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${student.id}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${student.name}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${student.levelDetail || '-'}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${formatTimestamp(record.timestamp)}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.studentId || '-'}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${record.name || '-'}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.level || '-'}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm">${formatAttendance(record.status)}</td>
+                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.reason || '-'}</td>
                 `;
                 
                 reportTableBody.appendChild(tr);
@@ -1021,13 +1036,13 @@
         }
 
         /**
-         * (อัปเดต) ทำการสร้างรายงาน (แสดงรายชื่อนักศึกษา)
-         * (FIX) เปลี่ยนจากการดึงโปรไฟล์ทีละคน (Serial) เป็นดึงพร้อมกัน (Parallel)
+         * (อัปเดต) ทำการสร้างรายงาน (ดึงโปรไฟล์นักศึกษา)
          */
         async function performReportGeneration() {
             // 1. ดึงค่าฟิลเตอร์
             const startDate = reportStartDate.value;
             const endDate = reportEndDate.value;
+            const statusFilter = reportStatusFilter.value; // (ใหม่)
             
             // 2. ตรวจสอบวันที่
             if (!startDate || !endDate) {
@@ -1048,6 +1063,7 @@
 
             try {
                 // 3. เรียก API ดึงข้อมูลการเข้าเรียน (getAttendanceData)
+                showReportStatus('กำลังดึงข้อมูลการเข้าเรียน...', 'info');
                 const response = await callAppsScript('getAttendanceData', {
                     startDate: startDate,
                     endDate: endDate,
@@ -1061,72 +1077,83 @@
 
                 let allRecords = response.data.records || [];
 
-                // 4. ประมวลผลเป็น *รายชื่อนักศึกษาที่ไม่ซ้ำกัน*
-                const uniqueStudentIds = {};
-                allRecords.forEach(record => {
-                    if (record.studentId) {
-                        uniqueStudentIds[record.studentId] = true; 
-                    }
-                });
-                const studentIdList = Object.keys(uniqueStudentIds);
-
-                let studentProfiles = [];
+                // (ใหม่) 4. กรองข้อมูลตามสถานะ
+                let filteredRecords = allRecords;
+                if (statusFilter !== 'all') {
+                    filteredRecords = allRecords.filter(record => {
+                        if (!record.status) return false; // กัน error
+                        if (statusFilter === 'present') return record.status.includes('มาเรียน');
+                        if (statusFilter === 'late') return record.status.includes('สาย');
+                        if (statusFilter === 'absent') return record.status.includes('ลา'); // 'ลา' จะครอบคลุม 'ลา/ขาด'
+                        return false;
+                    });
+                }
                 
-                // 5. (FIX) ถ้าพบนักศึกษา ให้ดึงข้อมูลโปรไฟล์ (getStudentData) แบบ Parallel
-                if (studentIdList.length > 0) {
-                    showReportStatus(`พบนักศึกษา ${studentIdList.length} คน, กำลังดึงข้อมูลโปรไฟล์...`, 'info');
-                    
-                    // สร้าง Array ของ Promises
-                    const profilePromises = studentIdList.map(id => {
-                        // แต่ละ promise จะ call API
-                        return callAppsScript('getStudentData', { studentId: id });
-                    });
-
-                    // รอให้ทุก Promises ทำงานเสร็จ (Promise.allSettled จะไม่ล่ม แม้บางอันจะ error)
-                    const results = await Promise.allSettled(profilePromises);
-                    
-                    // กรองเฉพาะอันที่สำเร็จ (status === 'fulfilled') และมีข้อมูล
-                    results.forEach(result => {
-                        if (result.status === 'fulfilled' && result.value.success) {
-                            studentProfiles.push(result.value.data);
-                        } else if (result.status === 'rejected') {
-                            console.warn(`Failed to fetch profile (rejected): ${result.reason}`);
-                        } else if (result.status === 'fulfilled' && !result.value.success) {
-                            console.warn(`Failed to fetch profile (API Error): ${result.value.error}`);
-                        }
-                    });
-
-                } else {
-                     showReportStatus(`ไม่พบข้อมูลนักศึกษาที่เข้าเรียนในช่วงวันที่กำหนด`, 'info');
+                // (อัปเดต) 5. ถ้าพบ records, ให้ดึงข้อมูลโปรไฟล์ (getStudentData)
+                if (filteredRecords.length === 0) {
+                     showReportStatus(`ไม่พบข้อมูลตามเงื่อนไขที่กำหนด`, 'info');
+                     reportTableWrapper.classList.remove('hidden'); // (ใหม่) แสดงตารางแม้จะว่าง
+                     renderReportTable(); // (ใหม่) เพื่อแสดง "ไม่พบข้อมูล"
                      setReportButtonLoading(false);
+                     reportLevelFilters.classList.add('hidden'); // (ใหม่) ซ่อนฟิลเตอร์ระดับชั้น
+                     reportExportButtons.classList.add('hidden'); // (ใหม่) ซ่อนปุ่ม export
                      return;
                 }
+                
+                // (ใหม่) 5.1. ดึง ID นักศึกษาที่ไม่ซ้ำกัน
+                const uniqueStudentIds = [...new Set(filteredRecords.map(r => r.studentId).filter(id => id))];
+                const reportProfileCache = {}; // Cache เฉพาะสำหรับรายงานนี้
 
-                // 6. เรียงลำดับข้อมูล
-                studentProfiles.sort((a, b) => {
-                    const levelA = a.levelDetail || '';
-                    const levelB = b.levelDetail || '';
-                    return levelA.localeCompare(levelB, 'th-TH'); // เรียงตามระดับชั้น (ก,ข,ค)
+                // (ใหม่) 5.2. ดึงข้อมูลโปรไฟล์ (Parallel)
+                if (uniqueStudentIds.length > 0) {
+                    showReportStatus(`พบ ${filteredRecords.length} รายการ, กำลังดึงข้อมูลโปรไฟล์ ${uniqueStudentIds.length} คน...`, 'info');
+                    
+                    const profilePromises = uniqueStudentIds.map(id => 
+                        callAppsScript('getStudentData', { studentId: id })
+                    );
+                    
+                    const results = await Promise.allSettled(profilePromises);
+                    
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value.success) {
+                            const profile = result.value.data;
+                            if (profile && profile.id) {
+                                reportProfileCache[profile.id] = profile; // [studentId]: { id, name, levelDetail, ... }
+                            }
+                        }
+                    });
+                }
+
+                // (ใหม่) 5.3. ผสานข้อมูลโปรไฟล์ (levelDetail) กลับเข้าไปใน records
+                const enhancedRecords = filteredRecords.map(record => {
+                    const profile = reportProfileCache[record.studentId];
+                    if (profile) {
+                        // ถ้าเจอโปรไฟล์, ใช้ levelDetail จากโปรไฟล์
+                        return {
+                            ...record,
+                            level: profile.levelDetail || record.level, // ใช้ levelDetail ถ้ามี, ไม่งั้นใช้ level เดิม
+                            name: profile.name || record.name // (ใหม่) ใช้ชื่อจากโปรไฟล์ถ้ามี
+                        };
+                    }
+                    return record; // คืน record เดิมถ้าไม่เจอโปรไฟล์
                 });
                 
+                // (อัปเดต) 6. เรียงลำดับข้อมูล (เก่าไปใหม่) (ใช้ enhancedRecords)
+                enhancedRecords.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                
                 // 7. เก็บ Cache และวาดตาราง
-                reportDataCache = studentProfiles; // เก็บข้อมูลสำหรับ Export
+                reportDataCache = enhancedRecords; // (อัปเดต) เก็บ records ที่ผสานแล้ว
                 currentLevelFilter = 'all'; // (ใหม่) รีเซ็ตฟิลเตอร์
                 
                 renderReportTable(); // (อัปเดต) ไม่ต้องส่งพารามิเตอร์
                 
                 reportTableWrapper.classList.remove('hidden');
                 
-                if (studentProfiles.length > 0) {
-                    showReportStatus(`แสดงผลลัพธ์ ${studentProfiles.length} คน (เรียงตามระดับชั้น)`, 'success');
-                    reportExportButtons.classList.remove('hidden'); // แสดงปุ่ม Export
-                    reportLevelFilters.classList.remove('hidden'); // (ใหม่) แสดงปุ่มฟิลเตอร์
-                    updateFilterButtonStyles(); // (ใหม่) อัปเดตสไตล์ (ให้ 'all' active)
-                } else {
-                     showReportStatus(`ไม่พบข้อมูลนักศึกษาที่ตรงตามเงื่อนไข`, 'info');
-                     reportExportButtons.classList.add('hidden'); // ซ่อนปุ่ม
-                     reportLevelFilters.classList.add('hidden'); // (ใหม่) ซ่อนปุ่มฟิลเตอร์
-                }
+                // (อัปเดต)
+                showReportStatus(`แสดงผลลัพธ์ ${enhancedRecords.length} รายการ`, 'success');
+                reportExportButtons.classList.remove('hidden'); // แสดงปุ่ม Export
+                reportLevelFilters.classList.remove('hidden'); // (ใหม่) แสดงปุ่มฟิลเตอร์
+                updateFilterButtonStyles(); // (ใหม่) อัปเดตสไตล์ (ให้ 'all' active)
 
             } catch (err) {
                 console.error("Report Generation Error:", err);
@@ -1291,26 +1318,32 @@
         }
         
         /**
-         * (ใหม่) ส่งออกข้อมูลรายงาน (Report) เป็น CSV
+         * (อัปเดต) ส่งออกข้อมูลรายงาน (Report) เป็น CSV
          */
         function exportReportToCSV() {
-            if (reportDataCache.length === 0) {
+            // (อัปเดต) กรองข้อมูลก่อน
+            const filteredData = filterReportData(reportDataCache, currentLevelFilter);
+            
+            if (filteredData.length === 0) {
                 // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
                 console.warn("ไม่มีข้อมูลรายงานให้ export");
                 return;
             }
 
             let csvContent = "data:text/csv;charset=utf-8,";
-            // Headers
-            csvContent += "ลำดับ,รหัสนักศึกษา,ชื่อ-นามสกุล,รายละเอียดระดับชั้น\r\n";
+            // (อัปเดต) Headers
+            csvContent += "ลำดับ,วันที่/เวลา,รหัสนักศึกษา,ชื่อ-นามสกุล,รายละเอียดระดับชั้น,สถานะ,เหตุผล\r\n";
 
-            // Rows
-            reportDataCache.forEach((row, index) => {
-                const id = row.id || "";
+            // (อัปเดต) Rows
+            filteredData.forEach((row, index) => {
+                const timestamp = formatTimestamp(row.timestamp).replace(/"/g, '""');
+                const id = row.studentId || "";
                 const name = row.name ? row.name.replace(/"/g, '""') : "";
-                const levelDetail = row.levelDetail ? row.levelDetail.replace(/"/g, '""') : "";
+                const level = row.level ? row.level.replace(/"/g, '""') : "";
+                const status = row.status || "";
+                const reason = row.reason ? row.reason.replace(/"/g, '""') : "";
                 
-                csvContent += `${index + 1},"${id}","${name}","${levelDetail}"\r\n`;
+                csvContent += `${index + 1},"${timestamp}","${id}","${name}","${level}","${status}","${reason}"\r\n`;
             });
 
             // Create download link
@@ -1335,6 +1368,9 @@
                 console.warn("ไม่มีข้อมูลรายงานให้พิมพ์");
                 return;
             }
+            
+            // (ใหม่) ดึงข้อความของสถานะที่เลือก
+            const statusText = reportStatusFilter.options[reportStatusFilter.selectedIndex].text;
 
             // 1. สร้างเนื้อหา HTML สำหรับพิมพ์
             let printHtml = `
@@ -1382,30 +1418,43 @@
                         page-break-inside: avoid; /* ป้องกันแถวขาดกลาง */
                     }
                 </style>
-                <h1>รายงานสรุปรายชื่อนักศึกษา</h1>
-                <h2>ช่วงวันที่: ${reportStartDate.value} ถึง ${reportEndDate.value}</h2>
+                <h1>รายงานสรุปการเข้าเรียน</h1>
+                <!-- (อัปเดต) -->
+                <h2>ช่วงวันที่: ${reportStartDate.value} ถึง ${reportEndDate.value} (สถานะ: ${statusText})</h2>
                 
                 <table>
                     <thead>
                         <tr>
                             <th>ลำดับ</th>
+                            <th>วันที่/เวลา</th>
                             <th>รหัสนักศึกษา</th>
                             <th>ชื่อ-นามสกุล</th>
                             <th>รายละเอียดระดับชั้น</th>
+                            <th>สถานะ</th>
+                            <th>เหตุผล</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
 
-            // 2. เพิ่มรายชื่อนักศึกษา
+            // 2. เพิ่มรายการ
             // (อัปเดต) ใช้ filteredData
-            filteredData.forEach((student, index) => {
+            filteredData.forEach((record, index) => {
+                // (อัปเดต)
+                let statusHtml = record.status || '';
+                if (statusHtml.includes('มาเรียน')) statusHtml = `<span style="color: #15803d; font-weight: 600;">มาเรียน</span>`;
+                else if (statusHtml.includes('สาย')) statusHtml = `<span style="color: #ea580c; font-weight: 600;">มาสาย</span>`;
+                else if (statusHtml.includes('ลา')) statusHtml = `<span style="color: #b91c1c; font-weight: 600;">ลา/ขาด</span>`;
+                
                 printHtml += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td>${student.id || ''}</td>
-                        <td>${student.name || ''}</td>
-                        <td>${student.levelDetail || ''}</td>
+                        <td>${formatTimestamp(record.timestamp)}</td>
+                        <td>${record.studentId || ''}</td>
+                        <td>${record.name || ''}</td>
+                        <td>${record.level || ''}</td>
+                        <td>${statusHtml}</td>
+                        <td>${record.reason || ''}</td>
                     </tr>
                 `;
             });
@@ -1434,7 +1483,7 @@
             showDashboardPlaceholder(); // เริ่มต้นด้วยหน้าว่าง
             
             // (ใหม่) ส่วนรายงาน
-            renderReportTableHeader();
+            renderReportTableHeader(); // (อัปเดต) วาดหัวตารางใหม่
             hideReportStatus(); // (อัปเดต) ซ่อน status เริ่มต้น
 
             // (อัปเดต) ไม่ต้องเริ่ม Live Monitor ตอนโหลด
