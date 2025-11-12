@@ -42,6 +42,22 @@
             border-width: 2px;
         }
         
+        /* * (*** ใหม่ ***) 
+         * สำหรับวันที่มีการบันทึกข้อมูล (สีม่วงอ่อน) 
+         */
+        .has-data-day {
+            background-color: #ede9fe; /* bg-violet-100 */
+        }
+        /* (ใหม่) เมื่อ hover วันที่มีข้อมูล */
+        .has-data-day:hover {
+            background-color: #ddd6fe; /* bg-violet-200 */
+        }
+        /* (ใหม่) ตรวจสอบให้แน่ใจว่าวันที่ถูกเลือก (selected) จะทับสีม่วงอ่อน */
+        .selected-day.has-data-day {
+            background-color: #f5f3ff; /* bg-violet-50 (สีของ selected) */
+            border-color: #7c3aed; /* border-violet-600 */
+        }
+        
         /* (ใหม่) สไตล์สำหรับการพิมพ์ (Print) */
         @media print {
             body {
@@ -590,19 +606,40 @@
         }
 
         /**
-         * (อัปเดต) ประมวลผลข้อมูลรายเดือนเพื่อแสดงยอดบนปฏิทิน (ปรับขนาด font)
+         * (*** อัปเดต ***) 
+         * ประมวลผลข้อมูลรายเดือนเพื่อแสดงยอดบนปฏิทิน
+         * และเพิ่ม class สีม่วงอ่อนสำหรับวันที่มีข้อมูล
          */
         function renderDailyCounts(records) {
-             const dailyCounts = {};
+             const dailyCounts = {}; // For 'มาเรียน' count
+             const daysWithData = new Set(); // (ใหม่) For *any* record
+
              records.forEach(record => {
-                if (record.status && record.status.includes('มาเรียน')) {
+                if (record.timestamp) {
                     const recordDate = new Date(record.timestamp);
                     const dateKey = recordDate.toISOString().split('T')[0]; // YYYY-MM-DD
-                    dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+                    
+                    // (ใหม่) Add to set for any record
+                    daysWithData.add(dateKey);
+
+                    // Original logic for 'มาเรียน' count
+                    if (record.status && record.status.includes('มาเรียน')) {
+                        dailyCounts[dateKey] = (dailyCounts[dateKey] || 0) + 1;
+                    }
                 }
              });
 
-            // อัปเดตตัวเลขลงในช่องปฏิทิน
+            // (ใหม่) Apply background color for all days with data
+            daysWithData.forEach(dateKey => {
+                // Find the day element using data-datekey attribute
+                const dayEl = document.querySelector(`.calendar-day[data-datekey="${dateKey}"]`);
+                if (dayEl) {
+                    dayEl.classList.add('has-data-day');
+                    dayEl.classList.remove('bg-white'); // Remove default white background
+                }
+            });
+
+            // อัปเดตตัวเลขลงในช่องปฏิทิน (for 'มาเรียน')
             Object.keys(dailyCounts).forEach(dateKey => {
                 const countEl = document.getElementById(`count-${dateKey}`);
                 if (countEl) {
@@ -677,6 +714,7 @@
                 const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 
                 // *** (ปรับปรุง) ลด mt-3 เป็น mt-1 ***
+                // (*** อัปเดต ***) เพิ่ม bg-white ที่นี่ (เพื่อให้ logic การลบใน renderDailyCounts ทำงานถูกต้อง)
                 calendarGrid.innerHTML += `
                     <div class="calendar-day p-2 border rounded-lg bg-white overflow-hidden text-left align-top clickable-day" 
                          data-datekey="${dateKey}">
