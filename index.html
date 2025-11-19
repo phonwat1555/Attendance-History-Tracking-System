@@ -1326,6 +1326,22 @@
                     .col-status { width: 22%; }
                     
                     tr:nth-child(even) { background-color: #f9fafb; }
+
+                    /* Signature Section */
+                    .signature-section {
+                        margin-top: 60px;
+                        page-break-inside: avoid;
+                        text-align: right;
+                        padding-right: 10mm;
+                    }
+                    .signature-box {
+                        display: inline-block;
+                        text-align: center;
+                        width: 350px;
+                    }
+                    .signature-line {
+                        margin-bottom: 15px;
+                    }
                 </style>
                 
                 <div class="print-container">
@@ -1415,7 +1431,17 @@
                 `;
             });
             
+            // Append Signature Section
             html += `   </div> <!-- end content -->
+            
+                    <div class="signature-section">
+                        <div class="signature-box">
+                            <div class="signature-line">ลงชื่อ ........................................................ ผู้ตรวจสอบ</div>
+                            <div class="signature-line">(........................................................)</div>
+                            <div class="signature-line">วันที่ ......... เดือน ........................ พ.ศ. ...........</div>
+                        </div>
+                    </div>
+
                     </div> <!-- end print-container -->
             `;
             
