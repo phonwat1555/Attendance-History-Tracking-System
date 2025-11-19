@@ -107,6 +107,7 @@
                     src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" 
                     alt="logo สกร.นม" 
                     class="mx-auto h-24 mb-4" 
+                    onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Logo';"
                 >
             <!-- (อัปเดต) H1 ม่วง -->
             <h1 class="text-2xl md:text-3xl font-bold text-violet-700 mb-2">
@@ -180,6 +181,14 @@
                                 <!-- ยอดสรุปจะถูกสร้างโดย JavaScript -->
                             </div>
                             
+                            <!-- *** (ใหม่) ปุ่มสรุปภาพรวมประจำวัน (แยกตามแผน) *** -->
+                            <button id="open-summary-modal-button" class="w-full mt-4 px-4 py-3 text-base font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition duration-150 shadow-md flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                <span>สรุปภาพรวมประจำวัน (แยกแผน)</span>
+                            </button>
+
                             <!-- (ใหม่) ปุ่มสำหรับเปิด/ปิด รายละเอียด -->
                             <button id="toggle-details-button" class="w-full mt-4 px-4 py-2 text-sm font-medium text-violet-700 bg-violet-100 rounded-lg hover:bg-violet-200 transition duration-150">
                                 แสดงรายชื่อนักศึกษาและตัวเลือก
@@ -245,8 +254,7 @@
 
     <!-- (ใหม่) Wrapper สำหรับหน้า "สร้างรายงาน" (ซ่อนไว้โดยเริ่มต้น) -->
     <div id="report-view-wrapper" class="hidden">
-        
-        <!-- (ใหม่) ปุ่มย้อนกลับ -->
+        <!-- ... (โค้ดส่วนสร้างรายงานเดิม คงไว้เหมือนเดิม) ... -->
         <div class="mb-4">
             <button id="back-to-main-button" class="p-2 rounded-lg hover:bg-gray-200 flex items-center gap-2 text-lg font-semibold text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
@@ -254,15 +262,9 @@
             </button>
         </div>
 
-        <!-- (ย้ายมา) ส่วนสร้างรายงาน (ปรับเงา) -->
-        <!-- (อัปเดต) ลบ 'hidden' ออกจากที่นี่ -->
         <div id="report-section" class="bg-white p-6 rounded-xl shadow-sm mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4">รายละเอียดรายงาน</h2>
-            
-            <!-- (อัปเดต) ปรับ Layout เป็น 3 คอลัมน์สำหรับฟิลเตอร์ -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
-                
-                <!-- Filters -->
                 <div>
                     <label for="report-start-date" class="block text-sm font-medium text-gray-700">วันที่เริ่มต้น</label>
                     <input type="date" id="report-start-date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
@@ -271,8 +273,6 @@
                     <label for="report-end-date" class="block text-sm font-medium text-gray-700">วันที่สิ้นสุด</label>
                     <input type="date" id="report-end-date" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500">
                 </div>
-                
-                <!-- (ใหม่) ตัวกรองสถานะ -->
                 <div>
                     <label for="report-status-filter" class="block text-sm font-medium text-gray-700">สถานะ</label>
                     <select id="report-status-filter" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-violet-500 focus:border-violet-500 bg-white">
@@ -282,11 +282,8 @@
                         <option value="absent">ลา / ขาดเรียน</option>
                     </select>
                 </div>
-            </div> <!-- /end filter grid -->
-
-            <!-- (ใหม่) Grid สำหรับปุ่ม -->
+            </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                <!-- (อัปเดต) Button ม่วง -->
                 <button id="generate-report-button" class="w-full bg-violet-600 text-white px-4 py-2 font-semibold rounded-lg shadow-sm hover:bg-violet-700 transition duration-200 flex items-center justify-center gap-2">
                     <svg id="report-search-icon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     <svg id="report-loading-spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -295,98 +292,53 @@
                     </svg>
                     <span>สร้างรายงาน</span>
                 </button>
-
-                <!-- (ใหม่) ปุ่มล้างการค้นหา -->
                 <button id="clear-report-button" class="w-full bg-gray-200 text-gray-700 px-4 py-2 font-semibold rounded-lg shadow-sm hover:bg-gray-300 transition duration-200 flex items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                     <span>ล้างการค้นหา</span>
                 </button>
-            </div> <!-- /end button grid -->
-
-        </div> <!-- /end report-section -->
+            </div>
+        </div>
         
-        
-        <!-- (*** ปรับปรุงใหม่ ***) ปุ่มกรองระดับชั้นแบบแผนการเรียน -->
         <div id="report-level-filters" class="bg-white p-4 rounded-xl shadow-sm mb-6 hidden">
             <h3 class="text-base font-semibold text-gray-700 mb-3">เลือกแผนการเรียน</h3>
             <div class="flex flex-wrap gap-2">
-                <!--
-                    (อัปเดต) เปลี่ยนเป็น แผน 1-6
-                -->
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-violet-600 text-white" data-filter="all">
-                    รวมทั้งหมด
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 1">
-                    แผน 1
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 2">
-                    แผน 2
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 3">
-                    แผน 3
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 4">
-                    แผน 4
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 5">
-                    แผน 5
-                </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 6">
-                    แผน 6
-                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-violet-600 text-white" data-filter="all">รวมทั้งหมด</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 1">แผน 1</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 2">แผน 2</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 3">แผน 3</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 4">แผน 4</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 5">แผน 5</button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 6">แผน 6</button>
             </div>
         </div>
 
-        <!-- (ย้ายมา) ส่วนแสดงสถานะ (ของส่วนรายงาน) -->
         <div id="report-status-message" class="text-center p-4 mb-6 rounded-lg hidden"></div>
 
-        <!-- (ย้ายมา) ส่วนแสดงผลลัพธ์ (ตาราง) (ของส่วนรายงาน) (ปรับเงา) -->
         <div id="report-table-wrapper" class="bg-white rounded-xl shadow-sm overflow-hidden hidden">
-            
-            <!-- (*** อัปเดต ***) เพิ่มปุ่ม Export ที่นี่ (เปลี่ยนเป็น 3 ปุ่ม) -->
             <div class="flex flex-wrap justify-between items-center p-4 border-b gap-4">
                 <h3 class="text-lg font-semibold text-gray-700">ผลลัพธ์รายงาน</h3>
                 <div id="report-export-buttons" class="hidden flex flex-wrap gap-2">
-                    
-                    <!-- (ใหม่) ปุ่ม Print -->
                     <button id="report-print-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-150 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
                         <span>พิมพ์</span>
                     </button>
-                    
-                    <!-- (ใหม่) ปุ่ม PDF -->
                     <button id="report-pdf-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                         <span>ดาวน์โหลด PDF</span>
                     </button>
-
-                    <!-- (ปรับปรุง) ปุ่ม CSV -->
                     <button id="report-csv-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-sm">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                         <span>ส่งออก CSV</span>
                     </button>
-
                 </div>
             </div>
-            
             <div class="overflow-x-auto">
                 <table class="min-w-full">
-                    <!-- (*** ปรับปรุง ***) เปลี่ยนสี Header เป็น bg-violet-100 -->
-                    <thead class="bg-violet-100" id="report-table-header">
-                        <!-- ส่วนหัวตารางจะถูกสร้างโดย JavaScript --></thead>
-                    <!-- (*** ปรับปรุง ***) ลบ divide-y ออกจาก body -->
-                    <tbody class="bg-white" id="report-table-body">
-                        <!-- ข้อมูลนักศึกษาจะถูกสร้างโดย JavaScript --></tbody>
+                    <thead class="bg-violet-100" id="report-table-header"></thead>
+                    <tbody class="bg-white" id="report-table-body"></tbody>
                 </table>
             </div>
         </div>
-
     </div> <!-- /end report-view-wrapper -->
 
 
@@ -395,7 +347,6 @@
     <!-- (ใหม่) Full-screen Live Monitor Overlay (Hidden by default) -->
     <div id="live-monitor-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden no-print">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl h-[90vh] flex flex-col">
-            <!-- Header -->
             <div class="flex justify-between items-center p-4 border-b">
                 <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-3">
                     <span class="relative flex h-3 w-3">
@@ -408,17 +359,76 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
-            
-            <!-- Status -->
-            <div id="live-monitor-status" class="p-3 text-sm text-gray-600 bg-gray-50">
-                อัปเดตล่าสุด: -
-            </div>
-            
-            <!-- List (Scrollable) -->
+            <div id="live-monitor-status" class="p-3 text-sm text-gray-600 bg-gray-50">อัปเดตล่าสุด: -</div>
             <ul id="live-monitor-list" class="divide-y divide-gray-200 overflow-y-auto flex-grow p-4">
                 <li id="live-monitor-placeholder" class="text-gray-500 text-center p-8">กำลังรอข้อมูล...</li>
-                <!-- JS will populate this -->
             </ul>
+        </div>
+    </div>
+
+    <!-- *** (ใหม่) Modal สรุปยอดประจำวันแยกตามแผน *** -->
+    <div id="summary-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-5xl h-[90vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-5 border-b bg-violet-50 rounded-t-xl">
+                <div>
+                    <h2 class="text-2xl font-bold text-violet-800 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                        สรุปภาพรวมประจำวัน (แยกตามแผนการเรียน)
+                    </h2>
+                    <p id="summary-modal-date" class="text-gray-600 mt-1 text-lg"></p>
+                </div>
+                <div class="flex gap-2">
+                    <!-- (ใหม่) ปุ่ม Print/PDF -->
+                    <button id="summary-print-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition duration-150 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>พิมพ์ / บันทึกเป็น PDF</span>
+                    </button>
+                    <!-- Close -->
+                    <button id="close-summary-modal-button" class="p-2 text-gray-500 hover:text-gray-800 bg-white rounded-full shadow-sm hover:shadow border border-gray-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Content (Scrollable) -->
+            <div id="summary-modal-content" class="flex-grow overflow-y-auto p-6 bg-gray-50">
+                
+                <!-- ส่วนที่ 1: Dashboard ยอดรวม -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3 px-1 border-l-4 border-violet-500 pl-2">1. ยอดรวมนักเรียนทั้งหมด</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-green-500">
+                            <p class="text-gray-500 text-sm font-medium">มาเรียน</p>
+                            <p id="summary-total-present" class="text-3xl font-bold text-green-600 mt-1">-</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-orange-400">
+                            <p class="text-gray-500 text-sm font-medium">มาสาย</p>
+                            <p id="summary-total-late" class="text-3xl font-bold text-orange-500 mt-1">-</p>
+                        </div>
+                        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-red-500">
+                            <p class="text-gray-500 text-sm font-medium">ลา / ขาด</p>
+                            <p id="summary-total-absent" class="text-3xl font-bold text-red-600 mt-1">-</p>
+                        </div>
+                    </div>
+                    <!-- ยอดรวมทั้งหมด -->
+                    <div class="mt-4 bg-violet-100 p-4 rounded-lg text-center border border-violet-200">
+                        <span class="text-violet-800 font-bold text-xl">รวมยอดทั้งหมด: <span id="summary-grand-total" class="text-2xl">0</span> คน</span>
+                    </div>
+                </div>
+
+                <!-- ส่วนที่ 2: แยกตามแผน -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3 px-1 border-l-4 border-blue-500 pl-2">2. รายละเอียดแยกตามแผนการเรียน</h3>
+                    <div id="summary-plans-container" class="space-y-6">
+                        <!-- Cards ของแต่ละแผนจะถูกสร้างที่นี่ -->
+                        <div class="text-center py-10 text-gray-500">กำลังโหลดข้อมูล...</div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -430,12 +440,10 @@
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxBQG0NjyO5p-8r79PSCOuBRqJBmGUX6Gd6PKAVw1Z7zcALP8higXf9uQtwR_SQIYhl/exec'; 
 
         // --- DOM ELEMENTS (ส่วนรายงาน) ---
-        const toggleReportButton = document.getElementById('toggle-report-button'); // (ใหม่)
-        // (อัปเดต) ย้าย reportSection มาอยู่กับ DOM ใหม่
-        // const reportSection = document.getElementById('report-section'); // (ใหม่) 
+        const toggleReportButton = document.getElementById('toggle-report-button'); 
         const reportStartDate = document.getElementById('report-start-date');
         const reportEndDate = document.getElementById('report-end-date');
-        const reportStatusFilter = document.getElementById('report-status-filter'); // (ใหม่)
+        const reportStatusFilter = document.getElementById('report-status-filter');
         const generateReportButton = document.getElementById('generate-report-button');
         const reportSearchIcon = document.getElementById('report-search-icon');
         const reportLoadingSpinner = document.getElementById('report-loading-spinner');
@@ -444,21 +452,15 @@
         const reportTableHeader = document.getElementById('report-table-header');
         const reportTableBody = document.getElementById('report-table-body');
         const reportExportButtons = document.getElementById('report-export-buttons');
-        
-        // (*** อัปเดต ***) เปลี่ยนเป็น 3 ปุ่ม
-        // const reportPrintPdfButton = document.getElementById('report-print-pdf-button'); // (ลบอันนี้)
-        const reportPrintButton = document.getElementById('report-print-button'); // (ใหม่)
-        const reportPdfButton = document.getElementById('report-pdf-button'); // (ใหม่)
-        const reportCsvButton = document.getElementById('report-csv-button'); // (ยังใช้อันนี้)
-
-        const clearReportButton = document.getElementById('clear-report-button'); // (ใหม่)
-        const reportLevelFilters = document.getElementById('report-level-filters'); // (ใหม่)
-
-        // (ใหม่) DOM Elements สำหรับสลับหน้า
+        const reportPrintButton = document.getElementById('report-print-button');
+        const reportPdfButton = document.getElementById('report-pdf-button');
+        const reportCsvButton = document.getElementById('report-csv-button');
+        const clearReportButton = document.getElementById('clear-report-button');
+        const reportLevelFilters = document.getElementById('report-level-filters');
         const mainViewWrapper = document.getElementById('main-view-wrapper');
         const reportViewWrapper = document.getElementById('report-view-wrapper');
         const backToMainButton = document.getElementById('back-to-main-button');
-        const reportSection = document.getElementById('report-section'); // (ย้ายมา)
+        const reportSection = document.getElementById('report-section');
 
 
         // --- DOM ELEMENTS (ส่วนปฏิทิน) ---
@@ -476,7 +478,6 @@
         const dashboardStudentList = document.getElementById('dashboard-student-list');
         const printPdfButton = document.getElementById('print-pdf-button');
         const csvButton = document.getElementById('csv-button');
-        // (ใหม่)
         const toggleDetailsButton = document.getElementById('toggle-details-button');
         const dashboardDetails = document.getElementById('dashboard-details');
         const printArea = document.getElementById('print-area');
@@ -489,6 +490,18 @@
         const liveMonitorPlaceholder = document.getElementById('live-monitor-placeholder');
         const liveMonitorStatus = document.getElementById('live-monitor-status');
 
+        // --- (ใหม่) DOM ELEMENTS (SUMMARY MODAL) ---
+        const openSummaryModalButton = document.getElementById('open-summary-modal-button');
+        const summaryModal = document.getElementById('summary-modal');
+        const closeSummaryModalButton = document.getElementById('close-summary-modal-button');
+        const summaryModalDate = document.getElementById('summary-modal-date');
+        const summaryTotalPresent = document.getElementById('summary-total-present');
+        const summaryTotalLate = document.getElementById('summary-total-late');
+        const summaryTotalAbsent = document.getElementById('summary-total-absent');
+        const summaryGrandTotal = document.getElementById('summary-grand-total');
+        const summaryPlansContainer = document.getElementById('summary-plans-container');
+        const summaryPrintButton = document.getElementById('summary-print-button'); // (ใหม่)
+
 
         // --- ตัวแปร Global ---
         let currentCalendarDate = new Date();
@@ -500,6 +513,10 @@
         let liveDataCache = ""; // (ใหม่) Cache สำหรับ Live Monitor
         let liveMonitorInterval = null; // (ใหม่) ID สำหรับ setInterval
         let studentProfileCache = {}; // (ใหม่) Cache for student profiles
+        
+        // (ใหม่) Global storage สำหรับข้อมูลสรุป
+        let currentSummaryGroups = null;
+        let currentSummaryTotals = null;
 
         // --- (ใหม่) Helper: Get today's date as YYYY-MM-DD ---
         function getTodayDateKey() {
@@ -954,6 +971,287 @@
             console.log("Report cleared.");
         }
 
+        // --- (ใหม่) ฟังก์ชันจัดการ Summary Modal ---
+
+        async function openSummaryModal() {
+            if (!selectedDateKey || selectedDayRecords.length === 0) {
+                alert('กรุณาเลือกวันที่ที่มีข้อมูลก่อน');
+                return;
+            }
+
+            // 1. แสดง Modal และสถานะโหลด
+            summaryModal.classList.remove('hidden');
+            summaryPlansContainer.innerHTML = '<div class="text-center py-10 text-gray-500"><svg class="animate-spin h-8 w-8 text-violet-600 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><p>กำลังดึงข้อมูลและจัดกลุ่ม...</p></div>';
+            
+            // ตั้งค่าวันที่ใน Header
+            summaryModalDate.textContent = `ประจำวันที่ ${dashboardDate.textContent}`;
+
+            try {
+                // 2. ตรวจสอบและดึงข้อมูลโปรไฟล์ (เพื่อให้ได้แผนการเรียนล่าสุด)
+                const missingProfileIds = [];
+                selectedDayRecords.forEach(record => {
+                    if (record.studentId && !studentProfileCache[record.studentId]) {
+                        missingProfileIds.push(record.studentId);
+                    }
+                });
+
+                if (missingProfileIds.length > 0) {
+                    const uniqueMissingIds = [...new Set(missingProfileIds)];
+                    const profilePromises = uniqueMissingIds.map(id => callAppsScript('getStudentData', { studentId: id }));
+                    const results = await Promise.allSettled(profilePromises);
+                    results.forEach(result => {
+                        if (result.status === 'fulfilled' && result.value.success) {
+                            const profile = result.value.data;
+                            if (profile && profile.id) {
+                                studentProfileCache[profile.id] = profile;
+                            }
+                        }
+                    });
+                }
+
+                // 3. ผสานข้อมูลและจัดกลุ่มตามแผน
+                const recordsWithPlan = selectedDayRecords.map(record => {
+                    const profile = studentProfileCache[record.studentId];
+                    // ลำดับการหาชื่อแผน: profile.plan -> profile.levelDetail -> record.level -> "ไม่ระบุ"
+                    const planName = (profile && profile.plan) ? profile.plan : 
+                                     ((profile && profile.levelDetail) ? profile.levelDetail : 
+                                     (record.level || 'ไม่ระบุแผนการเรียน'));
+                    
+                    return { ...record, planName: planName, displayName: (profile && profile.name) ? profile.name : record.name };
+                });
+
+                // 4. คำนวณยอดรวม (ส่วนที่ 1)
+                let totalPresent = 0, totalLate = 0, totalAbsent = 0;
+                const planGroups = {}; // Key: planName, Value: { present: 0, late: 0, absent: 0, students: [] }
+
+                recordsWithPlan.forEach(r => {
+                    // Global Counts
+                    if (r.status.includes('มาเรียน')) totalPresent++;
+                    else if (r.status.includes('สาย')) totalLate++;
+                    else if (r.status.includes('ลา')) totalAbsent++;
+
+                    // Grouping
+                    const pName = r.planName;
+                    if (!planGroups[pName]) {
+                        planGroups[pName] = { present: 0, late: 0, absent: 0, total: 0, students: [] };
+                    }
+                    
+                    planGroups[pName].students.push(r);
+                    planGroups[pName].total++;
+                    
+                    if (r.status.includes('มาเรียน')) planGroups[pName].present++;
+                    else if (r.status.includes('สาย')) planGroups[pName].late++;
+                    else if (r.status.includes('ลา')) planGroups[pName].absent++;
+                });
+
+                // อัปเดต UI ส่วนที่ 1
+                summaryTotalPresent.textContent = totalPresent;
+                summaryTotalLate.textContent = totalLate;
+                summaryTotalAbsent.textContent = totalAbsent;
+                summaryGrandTotal.textContent = totalPresent + totalLate + totalAbsent;
+                
+                // เก็บข้อมูลไว้ใช้ตอนพิมพ์
+                currentSummaryGroups = planGroups;
+                currentSummaryTotals = {
+                    present: totalPresent,
+                    late: totalLate,
+                    absent: totalAbsent,
+                    grandTotal: totalPresent + totalLate + totalAbsent
+                };
+
+
+                // 5. สร้าง HTML สำหรับส่วนที่ 2 (รายแผน)
+                summaryPlansContainer.innerHTML = '';
+                const sortedPlans = Object.keys(planGroups).sort(); // เรียงชื่อแผน
+
+                if (sortedPlans.length === 0) {
+                    summaryPlansContainer.innerHTML = '<p class="text-center text-gray-500">ไม่พบข้อมูลแผนการเรียน</p>';
+                }
+
+                sortedPlans.forEach(planName => {
+                    const group = planGroups[planName];
+                    const card = document.createElement('div');
+                    card.className = "bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden";
+                    
+                    // สร้างตารางรายชื่อ
+                    let studentRows = '';
+                    group.students.forEach((std, idx) => {
+                        let statusBadge = '';
+                        if (std.status.includes('มาเรียน')) statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">มาเรียน</span>';
+                        else if (std.status.includes('สาย')) statusBadge = '<span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">มาสาย</span>';
+                        else statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">ลา/ขาด</span>';
+
+                        studentRows += `
+                            <tr class="border-b last:border-0 hover:bg-gray-50">
+                                <td class="px-4 py-2 text-gray-500 text-sm w-12 text-center">${idx + 1}</td>
+                                <td class="px-4 py-2 text-gray-700 text-sm font-mono">${std.studentId || '-'}</td>
+                                <td class="px-4 py-2 text-gray-900 font-medium">${std.displayName}</td>
+                                <td class="px-4 py-2 text-center">${statusBadge}</td>
+                            </tr>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="bg-gray-50 px-5 py-3 border-b flex flex-wrap justify-between items-center gap-2">
+                            <h4 class="font-bold text-gray-800 text-lg">${formatLevelWithBadge(planName)}</h4>
+                            <div class="flex gap-3 text-sm">
+                                <span class="text-green-600 font-semibold">มา: ${group.present}</span>
+                                <span class="text-orange-600 font-semibold">สาย: ${group.late}</span>
+                                <span class="text-red-600 font-semibold">ขาด: ${group.absent}</span>
+                                <span class="text-gray-600 font-bold border-l pl-3 ml-1">รวม: ${group.total} คน</span>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto max-h-60 overflow-y-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-100 text-gray-600 text-xs uppercase sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-2 text-center font-semibold">ลำดับ</th>
+                                        <th class="px-4 py-2 font-semibold">รหัสนักศึกษา</th>
+                                        <th class="px-4 py-2 font-semibold">ชื่อ-นามสกุล</th>
+                                        <th class="px-4 py-2 text-center font-semibold">สถานะ</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    ${studentRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    summaryPlansContainer.appendChild(card);
+                });
+
+            } catch (error) {
+                console.error("Summary Error:", error);
+                summaryPlansContainer.innerHTML = `<p class="text-center text-red-500 py-4">เกิดข้อผิดพลาดในการประมวลผล: ${error.message}</p>`;
+            }
+        }
+
+        // --- (ใหม่) ฟังก์ชัน Print Summary Modal ---
+        function printSummaryModal() {
+            if (!currentSummaryGroups || !currentSummaryTotals) {
+                alert("ไม่พบข้อมูลสรุป กรุณารอสักครู่");
+                return;
+            }
+
+            const dateText = dashboardDate.textContent;
+            let printHtml = `
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+                    @page { size: A4; margin: 1.5cm; }
+                    body { font-family: 'Sarabun', sans-serif; font-size: 11pt; line-height: 1.4; width: 100%; }
+                    .print-header { display: flex; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+                    .print-header img { height: 60px; margin-right: 15px; }
+                    .print-header-text h1 { font-size: 14pt; font-weight: 600; margin: 0; }
+                    .print-header-text h2 { font-size: 12pt; font-weight: 400; margin: 0; color: #444; }
+                    h1.report-title { font-size: 16pt; font-weight: 600; margin-bottom: 5px; margin-top: 20px; color: #333; }
+                    h2.report-subtitle { font-size: 13pt; font-weight: 600; margin-top: 0; margin-bottom: 20px; color: #555; }
+                    
+                    /* Dashboard Cards (Print Version) */
+                    .summary-dashboard { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 10px; }
+                    .summary-card { border: 1px solid #ddd; border-radius: 8px; padding: 10px 15px; flex: 1; }
+                    .summary-card p.label { font-size: 10pt; color: #666; margin: 0; }
+                    .summary-card p.value { font-size: 16pt; font-weight: bold; margin: 5px 0 0 0; }
+                    .text-green { color: #15803d; }
+                    .text-orange { color: #ea580c; }
+                    .text-red { color: #b91c1c; }
+                    
+                    /* Tables */
+                    .plan-section { margin-bottom: 25px; page-break-inside: avoid; }
+                    .plan-header { background-color: #f3f4f6; padding: 8px 10px; font-weight: 600; border: 1px solid #ddd; border-bottom: none; display: flex; justify-content: space-between; }
+                    table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+                    th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+                    th { background-color: #f9fafb; font-weight: 600; }
+                    .center { text-align: center; }
+                </style>
+
+                <div class="print-header">
+                    <img src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" alt="Logo">
+                    <div class="print-header-text">
+                        <h1>ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา</h1>
+                        <h2>ระบบตรวจสอบประวัติการเข้าเรียน</h2>
+                    </div>
+                </div>
+
+                <h1 class="report-title">รายงานสรุปภาพรวมประจำวัน</h1>
+                <h2 class="report-subtitle">วันที่: ${dateText}</h2>
+
+                <div class="summary-dashboard">
+                    <div class="summary-card" style="border-left: 4px solid #22c55e;">
+                        <p class="label">มาเรียน</p>
+                        <p class="value text-green">${currentSummaryTotals.present}</p>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #f97316;">
+                        <p class="label">มาสาย</p>
+                        <p class="value text-orange">${currentSummaryTotals.late}</p>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #ef4444;">
+                        <p class="label">ลา / ขาด</p>
+                        <p class="value text-red">${currentSummaryTotals.absent}</p>
+                    </div>
+                    <div class="summary-card" style="border-left: 4px solid #7c3aed; background-color: #f5f3ff;">
+                        <p class="label">รวมทั้งหมด</p>
+                        <p class="value" style="color: #5b21b6;">${currentSummaryTotals.grandTotal}</p>
+                    </div>
+                </div>
+            `;
+
+            const sortedPlans = Object.keys(currentSummaryGroups).sort();
+            sortedPlans.forEach(planName => {
+                const group = currentSummaryGroups[planName];
+                printHtml += `
+                    <div class="plan-section">
+                        <div class="plan-header">
+                            <span>${planName}</span>
+                            <span style="font-size: 10pt; font-weight: normal;">
+                                มา: ${group.present} | สาย: ${group.late} | ขาด: ${group.absent} | รวม: ${group.total}
+                            </span>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="center" style="width: 50px;">ลำดับ</th>
+                                    <th style="width: 120px;">รหัสนักศึกษา</th>
+                                    <th>ชื่อ-นามสกุล</th>
+                                    <th class="center" style="width: 100px;">สถานะ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                group.students.forEach((std, idx) => {
+                    let statusText = std.status;
+                    let colorStyle = "";
+                    if (statusText.includes('มาเรียน')) { statusText = "มาเรียน"; colorStyle = "color: #15803d; font-weight: 600;"; }
+                    else if (statusText.includes('สาย')) { statusText = "มาสาย"; colorStyle = "color: #ea580c; font-weight: 600;"; }
+                    else { statusText = "ลา/ขาด"; colorStyle = "color: #b91c1c; font-weight: 600;"; }
+
+                    printHtml += `
+                        <tr>
+                            <td class="center">${idx + 1}</td>
+                            <td>${std.studentId || '-'}</td>
+                            <td>${std.displayName}</td>
+                            <td class="center" style="${colorStyle}">${statusText}</td>
+                        </tr>
+                    `;
+                });
+
+                printHtml += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            });
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHtml);
+            setTimeout(() => {
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                printWindow.close();
+            }, 500);
+        }
+
 
         // --- FUNCTIONS (ส่วนกลาง & ส่วนรายงาน) ---
 
@@ -1357,7 +1655,7 @@
                         margin-top: 0;
                         margin-bottom: 15px;
                     }
-                    
+
                     table { 
                         width: 100%; 
                         border-collapse: collapse;
@@ -1402,7 +1700,7 @@
                         padding-top: 8px;
                     }
                 </style>
-
+                
                 <!-- (ใหม่) ส่วนหัว Logo -->
                 <div class="print-header">
                     <img src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" alt="Logo">
@@ -1772,6 +2070,15 @@
             liveDataCache = ""; // รีเซ็ต cache
             studentProfileCache = {}; // (อัปเดต) เคลียร์ cache โปรไฟล์ด้วย
         });
+
+        // --- (ใหม่) Event Listeners for Summary Modal ---
+        openSummaryModalButton.addEventListener('click', openSummaryModal);
+        closeSummaryModalButton.addEventListener('click', () => {
+            summaryModal.classList.add('hidden');
+        });
+        
+        // (ใหม่)
+        summaryPrintButton.addEventListener('click', printSummaryModal);
 
     </script>
 </body>
