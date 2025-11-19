@@ -235,14 +235,6 @@
         </div> <!-- /end Main Grid Layout -->
 
 
-        <!-- (ย้ายไปคอลัมน์ขวาแล้ว) ... -->
-
-        <!-- (ย้าย) ส่วนสร้างรายงาน ... -->
-        
-        <!-- (ย้าย) ส่วนแสดงสถานะ (ของส่วนรายงาน) -->
-
-        <!-- (ย้าย) ส่วนแสดงผลลัพธ์ (ตาราง) (ของส่วนรายงาน) (ปรับเงา) -->
-
         <!-- (อัปเดต) ส่วนท้าย -->
         <footer class="text-center text-gray-500 mt-8 text-sm no-print">
             ระบบนี้เชื่อมต่อกับ ระบบบันทึกเข้าเรียน พัฒนาโดย : ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา
@@ -314,26 +306,33 @@
         </div> <!-- /end report-section -->
         
         
-        <!-- (ใหม่) ปุ่มกรองระดับชั้น (ซ่อนไว้โดยเริ่มต้น) -->
+        <!-- (*** ปรับปรุงใหม่ ***) ปุ่มกรองระดับชั้นแบบแผนการเรียน -->
         <div id="report-level-filters" class="bg-white p-4 rounded-xl shadow-sm mb-6 hidden">
-            <h3 class="text-base font-semibold text-gray-700 mb-3">ตัวกรองระดับชั้น</h3>
+            <h3 class="text-base font-semibold text-gray-700 mb-3">เลือกแผนการเรียน</h3>
             <div class="flex flex-wrap gap-2">
                 <!--
-                    (ใหม่) ปุ่มฟิลเตอร์
-                    - .level-filter-button เป็น class สำหรับจับ event
-                    - data-filter="all" / "ปวช.1" / "ปวช.2" / "ปวช.3" ใช้สำหรับ JavaScript
+                    (อัปเดต) เปลี่ยนเป็น แผน 1-6
                 -->
                 <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-violet-600 text-white" data-filter="all">
-                    ดูทั้งหมด
+                    รวมทั้งหมด
                 </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.1">
-                    ปวช.1
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 1">
+                    แผน 1
                 </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.2">
-                    ปวช.2
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 2">
+                    แผน 2
                 </button>
-                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="ปวช.3">
-                    ปวช.3
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 3">
+                    แผน 3
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 4">
+                    แผน 4
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 5">
+                    แผน 5
+                </button>
+                <button class="level-filter-button px-4 py-2 text-sm font-medium rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300" data-filter="แผน 6">
+                    แผน 6
                 </button>
             </div>
         </div>
@@ -344,27 +343,45 @@
         <!-- (ย้ายมา) ส่วนแสดงผลลัพธ์ (ตาราง) (ของส่วนรายงาน) (ปรับเงา) -->
         <div id="report-table-wrapper" class="bg-white rounded-xl shadow-sm overflow-hidden hidden">
             
-            <!-- (อัปเดต) เพิ่มปุ่ม Export ที่นี่ -->
-            <div class="flex justify-between items-center p-4 border-b">
+            <!-- (*** อัปเดต ***) เพิ่มปุ่ม Export ที่นี่ (เปลี่ยนเป็น 3 ปุ่ม) -->
+            <div class="flex flex-wrap justify-between items-center p-4 border-b gap-4">
                 <h3 class="text-lg font-semibold text-gray-700">ผลลัพธ์รายงาน</h3>
-                <div id="report-export-buttons" class="hidden space-x-2">
-                    <!-- (อัปเดต) ปุ่มทอง (Amber) -->
-                    <button id="report-print-pdf-button" class="flex items-center gap-1 px-3 py-1 text-sm font-medium text-amber-700 bg-amber-100 rounded-lg hover:bg-amber-200 transition duration-150">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        <span>Print / PDF</span>
+                <div id="report-export-buttons" class="hidden flex flex-wrap gap-2">
+                    
+                    <!-- (ใหม่) ปุ่ม Print -->
+                    <button id="report-print-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition duration-150 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm7-8a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span>พิมพ์</span>
                     </button>
-                    <button id="report-csv-button" class="flex items-center gap-1 px-3 py-1 text-sm font-medium text-green-700 bg-green-100 rounded-lg hover:bg-green-200 transition duration-150">
-                        <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                        <span>Export CSV</span>
+                    
+                    <!-- (ใหม่) ปุ่ม PDF -->
+                    <button id="report-pdf-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition duration-150 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>ดาวน์โหลด PDF</span>
                     </button>
+
+                    <!-- (ปรับปรุง) ปุ่ม CSV -->
+                    <button id="report-csv-button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition duration-150 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>ส่งออก CSV</span>
+                    </button>
+
                 </div>
             </div>
             
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50" id="report-table-header">
+                <table class="min-w-full">
+                    <!-- (*** ปรับปรุง ***) เปลี่ยนสี Header เป็น bg-violet-100 -->
+                    <thead class="bg-violet-100" id="report-table-header">
                         <!-- ส่วนหัวตารางจะถูกสร้างโดย JavaScript --></thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="report-table-body">
+                    <!-- (*** ปรับปรุง ***) ลบ divide-y ออกจาก body -->
+                    <tbody class="bg-white" id="report-table-body">
                         <!-- ข้อมูลนักศึกษาจะถูกสร้างโดย JavaScript --></tbody>
                 </table>
             </div>
@@ -427,8 +444,13 @@
         const reportTableHeader = document.getElementById('report-table-header');
         const reportTableBody = document.getElementById('report-table-body');
         const reportExportButtons = document.getElementById('report-export-buttons');
-        const reportPrintPdfButton = document.getElementById('report-print-pdf-button');
-        const reportCsvButton = document.getElementById('report-csv-button');
+        
+        // (*** อัปเดต ***) เปลี่ยนเป็น 3 ปุ่ม
+        // const reportPrintPdfButton = document.getElementById('report-print-pdf-button'); // (ลบอันนี้)
+        const reportPrintButton = document.getElementById('report-print-button'); // (ใหม่)
+        const reportPdfButton = document.getElementById('report-pdf-button'); // (ใหม่)
+        const reportCsvButton = document.getElementById('report-csv-button'); // (ยังใช้อันนี้)
+
         const clearReportButton = document.getElementById('clear-report-button'); // (ใหม่)
         const reportLevelFilters = document.getElementById('report-level-filters'); // (ใหม่)
 
@@ -483,6 +505,19 @@
         function getTodayDateKey() {
             const today = new Date();
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        // --- (ใหม่) Helper: สร้าง Badge สำหรับแผนการเรียน ---
+        function formatLevelWithBadge(text) {
+            if (!text) return '-';
+            // ตรวจสอบว่ามีคำว่า "แผน" หรือไม่
+            if (text.includes('แผน')) {
+                // สร้าง Badge สีน้ำเงิน (Blue)
+                return `<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${text}
+                        </span>`;
+            }
+            return text;
         }
 
         
@@ -764,7 +799,7 @@
             if (filter === 'all') {
                 return data;
             }
-            // (อัปเดต) กรองโดยเช็คว่า 'level' (เช่น "ปวช.1/1") มี "ปวช.1" (filter)
+            // (อัปเดต) กรองโดยเช็คว่า 'level' (เช่น "แผน 1 (คอมพิวเตอร์)") มี "แผน 1" (filter)
             return data.filter(record => 
                 record.level && record.level.includes(filter)
             );
@@ -992,18 +1027,20 @@
         }
 
         /**
-         * (อัปเดต) วาดส่วนหัวของตาราง (สำหรับรายงาน)
+         * (*** อัปเดต ***) วาดส่วนหัวของตาราง (สำหรับรายงาน) (เปลี่ยนสี)
          */
         function renderReportTableHeader() {
             reportTableHeader.innerHTML = ''; // เคลียร์ของเก่า
             const tr = document.createElement('tr');
-            // (อัปเดต) เพิ่มคอลัมน์สำหรับรายงานแบบ "รายการ"
-            const headers = ['ลำดับ', 'วันที่/เวลา', 'รหัสนักศึกษา', 'ชื่อ-นามสกุล', 'รายละเอียดระดับชั้น', 'สถานะ', 'เหตุผล'];
+            
+            // (*** อัปเดต ***) เปลี่ยนชื่อคอลัมน์ "แผนการเรียน / ระดับชั้น" เป็น "แผนการเรียน"
+            const headers = ['ลำดับ', 'วันที่/เวลา', 'รหัสนักศึกษา', 'ชื่อ-นามสกุล', 'แผนการเรียน', 'สถานะ', 'เหตุผล'];
             
             headers.forEach(header => {
                 const th = document.createElement('th');
                 th.scope = 'col';
-                th.className = 'px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider';
+                // (*** ปรับปรุง ***) เปลี่ยนสี header เป็นสีม่วง และปรับฟอนต์
+                th.className = 'px-5 py-3 text-left text-sm font-semibold text-violet-800 uppercase tracking-wider';
                 th.textContent = header;
                 tr.appendChild(th);
             });
@@ -1011,8 +1048,8 @@
         }
 
         /**
-         * (อัปเดต) วาดข้อมูลลงในตาราง (สำหรับรายงาน)
-         * (ใช้ global reportDataCache และ currentLevelFilter)
+         * (*** อัปเดต ***) วาดข้อมูลลงในตาราง (สำหรับรายงาน)
+         * (เพิ่ม Zebra Striping และ ปรับการตัดคำ)
          */
         function renderReportTable() {
             reportTableBody.innerHTML = ''; // เคลียร์ของเก่า
@@ -1034,17 +1071,29 @@
             // (อัปเดต) วาดตารางจาก records
             filteredData.forEach((record, index) => { 
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
                 
-                // (อัปเดต) เปลี่ยนคอลัมน์
+                // (*** ปรับปรุง ***) เพิ่มสีสลับแถว (Zebra stripes)
+                if (index % 2 === 0) {
+                    tr.className = 'bg-white hover:bg-violet-50 transition-colors duration-150';
+                } else {
+                    tr.className = 'bg-gray-50 hover:bg-violet-50 transition-colors duration-150';
+                }
+                
+                // (*** ปรับปรุง ***) 
+                // 1. ใช้ formatLevelWithBadge(record.level) เพื่อแสดง Badge แผนการเรียน
                 tr.innerHTML = `
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500 text-center">${index + 1}</td>
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${formatTimestamp(record.timestamp)}</td>
                     <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.studentId || '-'}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${record.name || '-'}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.level || '-'}</td>
+                    <!-- (ปรับปรุง) ลบ whitespace-nowrap, เพิ่ม w-48 (12rem) เพื่อให้ตัดคำ -->
+                    <td class="px-5 py-4 text-sm text-gray-900 font-medium w-48">${record.name || '-'}</td>
+                    
+                    <!-- (*** อัปเดต ***) ใช้ฟังก์ชัน Badge ที่นี่ -->
+                    <td class="px-5 py-4 text-sm text-gray-700 w-56">${formatLevelWithBadge(record.level)}</td>
+                    
                     <td class="px-5 py-4 whitespace-nowrap text-sm">${formatAttendance(record.status)}</td>
-                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">${record.reason || '-'}</td>
+                    <!-- (ปรับปรุง) ลบ whitespace-nowrap, เพิ่ม w-64 (16rem) เพื่อให้ตัดคำ -->
+                    <td class="px-5 py-4 text-sm text-gray-700 w-64">${record.reason || '-'}</td>
                 `;
                 
                 reportTableBody.appendChild(tr);
@@ -1142,9 +1191,9 @@
                 const uniqueStudentIds = [...new Set(filteredRecords.map(r => r.studentId).filter(id => id))];
                 const reportProfileCache = {}; // Cache เฉพาะสำหรับรายงานนี้
 
-                // (ใหม่) 5.2. ดึงข้อมูลโปรไฟล์ (Parallel)
+                // (ใหม่) 5.2. ดึงข้อมูลโปรไฟล์ (Parallel) จาก Sheet_Students (ผ่าน API getStudentData)
                 if (uniqueStudentIds.length > 0) {
-                    showReportStatus(`พบ ${filteredRecords.length} รายการ, กำลังดึงข้อมูลโปรไฟล์ ${uniqueStudentIds.length} คน...`, 'info');
+                    showReportStatus(`พบ ${filteredRecords.length} รายการ, กำลังดึงข้อมูลโปรไฟล์ (แผนการเรียน) จาก ${uniqueStudentIds.length} คน...`, 'info');
                     
                     const profilePromises = uniqueStudentIds.map(id => 
                         callAppsScript('getStudentData', { studentId: id })
@@ -1156,21 +1205,24 @@
                         if (result.status === 'fulfilled' && result.value.success) {
                             const profile = result.value.data;
                             if (profile && profile.id) {
-                                reportProfileCache[profile.id] = profile; // [studentId]: { id, name, levelDetail, ... }
+                                reportProfileCache[profile.id] = profile; // [studentId]: { id, name, levelDetail, plan... }
                             }
                         }
                     });
                 }
 
-                // (ใหม่) 5.3. ผสานข้อมูลโปรไฟล์ (levelDetail) กลับเข้าไปใน records
+                // (ใหม่) 5.3. ผสานข้อมูลโปรไฟล์ (levelDetail ซึ่งเป็นที่อยู่ของ แผนการเรียน) กลับเข้าไปใน records
                 const enhancedRecords = filteredRecords.map(record => {
                     const profile = reportProfileCache[record.studentId];
                     if (profile) {
-                        // ถ้าเจอโปรไฟล์, ใช้ levelDetail จากโปรไฟล์
+                        // *** สำคัญ: ดึงข้อมูลแผนการเรียน จาก Sheet_Students มาใช้แทนข้อมูลเก่าใน Log ***
+                        // Priority 1: profile.plan (ถ้า GAS ส่ง field ชื่อ plan มา)
+                        // Priority 2: profile.levelDetail (ถ้า GAS map แผนการเรียนไว้ที่ levelDetail)
+                        // Priority 3: record.level (ถ้าไม่มีอะไร ใช้ค่าเดิม)
                         return {
                             ...record,
-                            level: profile.levelDetail || record.level, // ใช้ levelDetail ถ้ามี, ไม่งั้นใช้ level เดิม
-                            name: profile.name || record.name // (ใหม่) ใช้ชื่อจากโปรไฟล์ถ้ามี
+                            level: profile.plan || profile.levelDetail || record.level, 
+                            name: profile.name || record.name 
                         };
                     }
                     return record; // คืน record เดิมถ้าไม่เจอโปรไฟล์
@@ -1236,11 +1288,10 @@
         }
 
         /**
-         * (อัปเดต) พิมพ์ข้อมูลแดชบอร์ด (ปรับปรุงสไตล์)
+         * (*** อัปเดตการพิมพ์ ***) พิมพ์ข้อมูลแดชบอร์ด (เพิ่ม Logo และ A4)
          */
         function printDashboard() {
             if (!selectedDateKey || selectedDayRecords.length === 0) {
-                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
                 console.warn("ไม่มีข้อมูลให้พิมพ์");
                 return;
             }
@@ -1250,36 +1301,71 @@
 
             let printHtml = `
                 <style>
-                    /* (ใหม่) บังคับโหลดฟอนต์ */
+                    /* บังคับโหลดฟอนต์ */
                     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+                    
+                    /* (ใหม่) ตั้งค่าหน้า A4 */
+                    @page {
+                        size: A4;
+                        margin: 1.5cm; /* 1.5cm margin all around */
+                    }
                     
                     body { 
                         font-family: 'Sarabun', sans-serif; 
-                        margin: 20px; 
                         font-size: 11pt; /* ขนาดฟอนต์สำหรับพิมพ์ */
                         line-height: 1.5;
+                        width: 100%;
                     }
-                    h1 { 
-                        font-size: 18pt; 
+                    
+                    /* (ใหม่) ส่วนหัว Logo + ชื่อ */
+                    .print-header {
+                        display: flex;
+                        align-items: center; /* Vertically center logo and text */
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #eee;
+                        padding-bottom: 15px;
+                    }
+                    .print-header img {
+                        height: 60px; /* Logo height */
+                        width: auto;
+                        margin-right: 15px;
+                    }
+                    .print-header-text h1 {
+                        font-size: 14pt; /* Org name */
+                        font-weight: 600;
+                        color: #000;
+                        margin: 0;
+                    }
+                    .print-header-text h2 {
+                        font-size: 12pt; /* App name */
+                        font-weight: 400;
+                        color: #444;
+                        margin: 0;
+                    }
+
+                    /* (อัปเดต) หัวเรื่องรายงาน */
+                    h1.report-title { 
+                        font-size: 16pt; 
                         font-weight: 600; 
                         color: #333;
                         margin-bottom: 5px;
                     }
-                    h2 { 
-                        font-size: 14pt; 
+                    h2.report-subtitle { 
+                        font-size: 13pt; 
                         font-weight: 600; 
                         color: #555;
                         margin-top: 0;
                         margin-bottom: 15px;
                     }
+                    
                     table { 
                         width: 100%; 
-                        border-collapse: collapse; /* ใช้ collapse เพื่อความแน่นอนในการพิมพ์ */
+                        border-collapse: collapse;
                         margin-top: 15px; 
                         font-size: 10pt;
                     }
                     th, td { 
-                        border: 1px solid #ddd; /* เส้นขอบชัดเจน */
+                        border: 1px solid #ddd;
                         padding: 8px; 
                         text-align: left; 
                     }
@@ -1290,14 +1376,14 @@
                         padding-bottom: 10px;
                     }
                     tr {
-                        page-break-inside: avoid; /* ป้องกันแถวขาดกลาง */
+                        page-break-inside: avoid;
                     }
                     /* สีสถานะ */
                     .text-green { color: #15803d; font-weight: 600; }
                     .text-orange { color: #ea580c; font-weight: 600; }
                     .text-red { color: #b91c1c; font-weight: 600; }
 
-                    /* (ใหม่) จัดสไตล์ส่วนสรุปยอด */
+                    /* จัดสไตล์ส่วนสรุปยอด */
                     #dashboard-summary-print > div {
                         display: flex;
                         justify-content: space-between;
@@ -1316,11 +1402,22 @@
                         padding-top: 8px;
                     }
                 </style>
-                <h1>สรุปข้อมูลการเข้าเรียน</h1>
-                <h2>วันที่: ${dashboardDate.textContent}</h2>
-                <!-- (อัปเดต) ใช้ ID และ HTML ที่ลบ SVG แล้ว -->
+
+                <!-- (ใหม่) ส่วนหัว Logo -->
+                <div class="print-header">
+                    <img src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" alt="Logo">
+                    <div class="print-header-text">
+                        <h1>ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา</h1>
+                        <h2>ระบบตรวจสอบประวัติการเข้าเรียน</h2>
+                    </div>
+                </div>
+
+                <!-- (อัปเดต) หัวเรื่องรายงาน -->
+                <h1 class="report-title">สรุปข้อมูลการเข้าเรียน</h1>
+                <h2 class="report-subtitle">วันที่: ${dashboardDate.textContent}</h2>
+
                 <div id="dashboard-summary-print">${summaryPrintHtml}</div> 
-                <h2>รายชื่อ</h2>
+                <h2 class="report-subtitle" style="margin-top: 20px;">รายชื่อ</h2>
                 <table>
                     <thead>
                         <tr>
@@ -1370,7 +1467,7 @@
 
             let csvContent = "data:text/csv;charset=utf-8,";
             // (อัปเดต) Headers
-            csvContent += "ลำดับ,วันที่/เวลา,รหัสนักศึกษา,ชื่อ-นามสกุล,รายละเอียดระดับชั้น,สถานะ,เหตุผล\r\n";
+            csvContent += "ลำดับ,วันที่/เวลา,รหัสนักศึกษา,ชื่อ-นามสกุล,แผนการเรียน,สถานะ,เหตุผล\r\n";
 
             // (อัปเดต) Rows
             filteredData.forEach((row, index) => {
@@ -1395,14 +1492,13 @@
         }
 
         /**
-         * (อัปเดต) พิมพ์ข้อมูลรายงาน (Report) (ปรับปรุงสไตล์)
+         * (*** อัปเดตการพิมพ์ ***) พิมพ์ข้อมูลรายงาน (Report) (เพิ่ม Logo และ A4)
          */
         function printReport() {
             // (ใหม่) กรองข้อมูลก่อนพิมพ์
             const filteredData = filterReportData(reportDataCache, currentLevelFilter);
 
             if (filteredData.length === 0) {
-                // (อัปเดต) เปลี่ยน alert เป็น console.warn หรือ custom modal
                 console.warn("ไม่มีข้อมูลรายงานให้พิมพ์");
                 return;
             }
@@ -1413,36 +1509,71 @@
             // 1. สร้างเนื้อหา HTML สำหรับพิมพ์
             let printHtml = `
                 <style>
-                    /* (ใหม่) บังคับโหลดฟอนต์ */
+                    /* บังคับโหลดฟอนต์ */
                     @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap');
+                    
+                    /* (ใหม่) ตั้งค่าหน้า A4 */
+                    @page {
+                        size: A4;
+                        margin: 1.5cm; /* 1.5cm margin all around */
+                    }
                     
                     body { 
                         font-family: 'Sarabun', sans-serif; 
-                        margin: 20px; 
                         font-size: 11pt; /* ขนาดฟอนต์สำหรับพิมพ์ */
                         line-height: 1.5;
+                        width: 100%;
                     }
-                    h1 { 
-                        font-size: 18pt; 
+                    
+                    /* (ใหม่) ส่วนหัว Logo + ชื่อ */
+                    .print-header {
+                        display: flex;
+                        align-items: center; /* Vertically center logo and text */
+                        margin-bottom: 20px;
+                        border-bottom: 2px solid #eee;
+                        padding-bottom: 15px;
+                    }
+                    .print-header img {
+                        height: 60px; /* Logo height */
+                        width: auto;
+                        margin-right: 15px;
+                    }
+                    .print-header-text h1 {
+                        font-size: 14pt; /* Org name */
+                        font-weight: 600;
+                        color: #000;
+                        margin: 0;
+                    }
+                    .print-header-text h2 {
+                        font-size: 12pt; /* App name */
+                        font-weight: 400;
+                        color: #444;
+                        margin: 0;
+                    }
+
+                    /* (อัปเดต) หัวเรื่องรายงาน */
+                    h1.report-title { 
+                        font-size: 16pt; 
                         font-weight: 600; 
                         color: #333;
                         margin-bottom: 5px;
                     }
-                    h2 { 
-                        font-size: 14pt; 
+                    h2.report-subtitle { 
+                        font-size: 13pt; 
                         font-weight: 600; 
                         color: #555;
                         margin-top: 0;
                         margin-bottom: 15px;
                     }
+
                     table { 
                         width: 100%; 
-                        border-collapse: collapse; /* ใช้ collapse เพื่อความแน่นอนในการพิมพ์ */
+                        border-collapse: collapse;
                         margin-top: 15px; 
                         font-size: 10pt;
                     }
                     th, td { 
-                        border: 1px solid #ddd; /* เส้นขอบชัดเจน */
+                        border: 1px solid #ddd;
                         padding: 8px; 
                         text-align: left; 
                     }
@@ -1453,12 +1584,22 @@
                         padding-bottom: 10px;
                     }
                     tr {
-                        page-break-inside: avoid; /* ป้องกันแถวขาดกลาง */
+                        page-break-inside: avoid;
                     }
                 </style>
-                <h1>รายงานสรุปการเข้าเรียน</h1>
-                <!-- (อัปเดต) -->
-                <h2>ช่วงวันที่: ${reportStartDate.value} ถึง ${reportEndDate.value} (สถานะ: ${statusText})</h2>
+                
+                <!-- (ใหม่) ส่วนหัว Logo -->
+                <div class="print-header">
+                    <img src="https://img2.pic.in.th/pic/logo-.ea589acd928fdfa8.png" alt="Logo">
+                    <div class="print-header-text">
+                        <h1>ศูนย์ส่งเสริมการเรียนรู้ระดับอำเภอเมืองนครราชสีมา</h1>
+                        <h2>ระบบตรวจสอบประวัติการเข้าเรียน</h2>
+                    </div>
+                </div>
+                
+                <!-- (อัปเดต) หัวเรื่องรายงาน -->
+                <h1 class="report-title">รายงานสรุปการเข้าเรียน</h1>
+                <h2 class="report-subtitle">ช่วงวันที่: ${reportStartDate.value} ถึง ${reportEndDate.value} (สถานะ: ${statusText})</h2>
                 
                 <table>
                     <thead>
@@ -1467,7 +1608,7 @@
                             <th>วันที่/เวลา</th>
                             <th>รหัสนักศึกษา</th>
                             <th>ชื่อ-นามสกุล</th>
-                            <th>รายละเอียดระดับชั้น</th>
+                            <th>แผนการเรียน</th>
                             <th>สถานะ</th>
                             <th>เหตุผล</th>
                         </tr>
@@ -1476,9 +1617,7 @@
             `;
 
             // 2. เพิ่มรายการ
-            // (อัปเดต) ใช้ filteredData
             filteredData.forEach((record, index) => {
-                // (อัปเดต)
                 let statusHtml = record.status || '';
                 if (statusHtml.includes('มาเรียน')) statusHtml = `<span style="color: #15803d; font-weight: 600;">มาเรียน</span>`;
                 else if (statusHtml.includes('สาย')) statusHtml = `<span style="color: #ea580c; font-weight: 600;">มาสาย</span>`;
@@ -1594,9 +1733,10 @@
             renderReportTable(); // วาดตารางใหม่ด้วยฟิลเตอร์
         });
         
-        // (ใหม่) ปุ่ม Export ของส่วนรายงาน
-        reportPrintPdfButton.addEventListener('click', printReport);
-        reportCsvButton.addEventListener('click', exportReportToCSV); // (แก้ไข Bug)
+        // (*** อัปเดต ***) ปุ่ม Export ของส่วนรายงาน
+        reportPrintButton.addEventListener('click', printReport); // (ใหม่)
+        reportPdfButton.addEventListener('click', printReport); // (ใหม่)
+        reportCsvButton.addEventListener('click', exportReportToCSV); 
 
         // --- (อัปเดต) (Live Monitor Toggle) ---
         toggleLiveMonitorButton.addEventListener('click', () => {
